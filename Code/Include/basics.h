@@ -425,7 +425,7 @@ inline Vector2 Box2D::operator[](int i) const
 }
 
 
-// Circle2. A Circle geometric element.
+// Circle2. A 2D Circle geometric element.
 class Circle2
 {
 protected:
@@ -491,6 +491,57 @@ inline bool Circle2::Contains(const Vector2& p) const
 }
 
 
+// Circle. A 3D Circle geometric element.
+class Circle
+{
+protected:
+	Vector3 center;
+	Vector3 normal;
+	float radius;
+
+public:
+	Circle(const Vector3& c, const Vector3& n, float r);
+
+	Vector3 Center() const;
+	Vector3 Normal() const;
+	float Radius() const;
+};
+
+/*
+\brief
+*/
+Circle::Circle(const Vector3& c, const Vector3& n, float r)
+{
+	center = c;
+	normal = n;
+	radius = r;
+}
+
+/*
+\brief
+*/
+Vector3 Circle::Center() const
+{
+	return center;
+}
+
+/*
+\brief
+*/
+Vector3 Circle::Normal() const
+{
+	return normal;
+}
+
+/*
+\brief
+*/
+float Circle::Radius() const
+{
+	return radius;
+}
+
+
 // Sphere. Spherical geometric element.
 class Sphere
 {
@@ -504,6 +555,7 @@ public:
 	float Distance(const Vector3& p) const;
 	bool Contains(const Vector3& p) const;
 	Vector3 RandomInside() const;
+	Vector3 RandomSurface() const;
 	Vector3 Center() const;
 	float Radius() const;
 };
@@ -544,6 +596,14 @@ inline bool Sphere::Contains(const Vector3& p) const
 inline Vector3 Sphere::RandomInside() const
 {
 	return center + Vector3(Random::Uniform(-radius, radius), Random::Uniform(-radius, radius), Random::Uniform(-radius, radius));
+}
+
+/*!
+\brief
+*/
+inline Vector3 Sphere::RandomSurface() const
+{
+	return Vector3(0);
 }
 
 /*!

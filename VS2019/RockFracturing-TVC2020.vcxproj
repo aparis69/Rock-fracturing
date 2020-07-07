@@ -124,11 +124,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Code\Source\blocks.cpp" />
     <ClCompile Include="..\Code\Source\heightfield.cpp" />
     <ClCompile Include="..\Code\Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Code\Include\basics.h" />
+    <ClInclude Include="..\Code\Include\blocks.h" />
     <ClInclude Include="..\Code\Include\heightfield.h" />
     <ClInclude Include="..\Code\Include\noise.h" />
     <ClInclude Include="..\Code\Include\vec.h" />
