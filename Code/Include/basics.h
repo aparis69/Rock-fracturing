@@ -44,7 +44,62 @@ public:
 };
 
 
-// AABB 3D class
+// 3D Ray
+class Ray
+{
+public:
+	Vector3 o;
+	Vector3 d;
+
+	Ray();
+	Ray(const Vector3& oo, const Vector3& dd);
+};
+
+inline Ray::Ray()
+{
+
+}
+
+inline Ray::Ray(const Vector3& oo, const Vector3& dd)
+{
+	o = oo;
+	d = dd;
+}
+
+
+// Plane
+class Plane
+{
+protected:
+	Vector3 p;
+	Vector3 n;
+
+public:
+	Plane();
+	Plane(const Vector3& p, const Vector3& n);
+
+	Vector3 Normal() const;
+	Vector3 Point() const;
+	static std::vector<Vector3> ConvexPoints(const std::vector<Plane>& planes);
+};
+
+
+// 3D Triangle
+class Triangle
+{
+private:
+	Vector3 pts[3];
+
+public:
+	Triangle();
+	Triangle(const Vector3& a, const Vector3& b, const Vector3& c);
+
+	Vector3 Center() const;
+	Vector3 Normal() const;
+};
+
+
+// AABB 3D
 class Box
 {
 protected:
@@ -59,6 +114,8 @@ public:
 	bool Contains(const Vector3&) const;
 	Box Extended(const Vector3&) const;
 	float Distance(const Vector3& p) const;
+	Vector3 Diagonal() const;
+	Vector3 Size() const;
 	Vector3 RandomInside() const;
 	void SetParallelepipedic(float size, int& x, int& y, int& z);
 	void SetParallelepipedic(int n, int& x, int& y, int& z);
@@ -117,6 +174,22 @@ inline bool Box::Contains(const Vector3& p) const
 inline Box Box::Extended(const Vector3& r) const
 {
 	return Box(a - r, b + r);
+}
+
+/*!
+\brief Returns the diagonal of the box.
+*/
+inline Vector3 Box::Diagonal() const
+{
+	return (b - a);
+}
+
+/*!
+\brief Returns the size of the box.
+*/
+inline Vector3 Box::Size() const
+{
+	return (b - a);
 }
 
 /*!
@@ -250,7 +323,7 @@ inline Vector3 Box::operator[](int i) const
 }
 
 
-// AABB 2D class.
+// AABB 2D
 class Box2D
 {
 protected:
@@ -505,6 +578,7 @@ public:
 	Vector3 Center() const;
 	Vector3 Normal() const;
 	float Radius() const;
+	bool Intersect(const Ray& r, float& t) const;
 };
 
 /*

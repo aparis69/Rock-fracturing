@@ -57,7 +57,8 @@ public:
 	std::vector<Vector3> pts;
 };
 
+
 PointSet3 PoissonSamplingCube(const Box& box, float r, int n);
 FractureSet GenerateFractures(FractureType type, const Box& box, float r);
 std::vector<BlockCluster> ComputeBlockClusters(PointSet3& set, const FractureSet& frac);
-void ComputeBlockPrimitives(const std::vector<BlockCluster>& clusters);
+void ComputeBlockMeshes(const std::vector<BlockCluster>& clusters);
