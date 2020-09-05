@@ -197,6 +197,7 @@ public:
 
 	Vector3 Center() const;
 	Vector3 Normal() const;
+	Vector3 Point(int i) const;
 };
 
 inline Triangle::Triangle()
@@ -218,6 +219,11 @@ inline Vector3 Triangle::Center() const
 inline Vector3 Triangle::Normal() const
 {
 	return Normalize(Cross(pts[1] - pts[0], pts[2] - pts[0]));
+}
+
+inline Vector3 Triangle::Point(int i) const
+{
+	return pts[i];
 }
 
 

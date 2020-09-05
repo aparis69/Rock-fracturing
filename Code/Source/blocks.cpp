@@ -226,8 +226,9 @@ std::vector<BlockCluster> ComputeBlockClusters(PointSet3& set, const FractureSet
 /*!
 \brief
 */
-void ComputeBlockMeshes(const std::vector<BlockCluster>& clusters)
+std::vector<BlockMesh> ComputeBlockMeshes(const std::vector<BlockCluster>& clusters)
 {
+	std::vector<BlockMesh> meshes;
 	for (int k = 0; k < clusters.size(); k++)
 	{
 		std::vector<Plane> ret;
@@ -256,12 +257,11 @@ void ComputeBlockMeshes(const std::vector<BlockCluster>& clusters)
 			Vector3 v3 = Vector3(vertices[faceIndices[j + 2]].x, vertices[faceIndices[j + 2]].y, vertices[faceIndices[j + 2]].z);
 			meshTriangles.push_back(Triangle(v1, v2, v3));
 		}
-
-		// Export
-		// @Todo(Axel)
+		meshes.push_back(BlockMesh({ meshTriangles }));
 
 		// Free memory
 		delete[] vertices;
 		delete[] faceIndices;
 	}
+	return meshes;
 }

@@ -57,8 +57,14 @@ public:
 	std::vector<Vector3> pts;
 };
 
+struct BlockMesh
+{
+public:
+	std::vector<Triangle> triangles;
+};
+
 
 PointSet3 PoissonSamplingCube(const Box& box, float r, int n);
 FractureSet GenerateFractures(FractureType type, const Box& box, float r);
 std::vector<BlockCluster> ComputeBlockClusters(PointSet3& set, const FractureSet& frac);
-void ComputeBlockMeshes(const std::vector<BlockCluster>& clusters);
+std::vector<BlockMesh> ComputeBlockMeshes(const std::vector<BlockCluster>& clusters);
