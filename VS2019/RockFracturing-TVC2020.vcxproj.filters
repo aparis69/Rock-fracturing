@@ -37,5 +37,8 @@
     <ClInclude Include="..\Code\Include\blocks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Code\Include\convhull_3d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

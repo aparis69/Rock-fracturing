@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClInclude Include="..\Code\Include\basics.h" />
     <ClInclude Include="..\Code\Include\blocks.h" />
+    <ClInclude Include="..\Code\Include\convhull_3d.h" />
     <ClInclude Include="..\Code\Include\heightfield.h" />
     <ClInclude Include="..\Code\Include\noise.h" />
     <ClInclude Include="..\Code\Include\vec.h" />

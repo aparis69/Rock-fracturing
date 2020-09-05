@@ -53,6 +53,7 @@ public:
 
 	Ray();
 	Ray(const Vector3& oo, const Vector3& dd);
+	Vector3 operator()(float t) const;
 };
 
 inline Ray::Ray()
@@ -64,6 +65,11 @@ inline Ray::Ray(const Vector3& oo, const Vector3& dd)
 {
 	o = oo;
 	d = dd;
+}
+
+inline Vector3 Ray::operator()(float t) const
+{
+	return o + t * d;
 }
 
 
@@ -80,8 +86,103 @@ public:
 
 	Vector3 Normal() const;
 	Vector3 Point() const;
+	int Side(const Vector3& p) const;
+	static bool Intersection(const Plane& a, const Plane& b, const Plane& c, Vector3& p);
 	static std::vector<Vector3> ConvexPoints(const std::vector<Plane>& planes);
 };
+
+/*!
+\brief
+*/
+inline Plane::Plane()
+{
+}
+
+/*!
+\brief
+*/
+inline Plane::Plane(const Vector3& pp, const Vector3& nn)
+{
+	p = pp;
+	n = nn;
+}
+
+/*!
+\brief
+*/
+inline Vector3 Plane::Normal() const
+{
+	return n;
+}
+
+/*!
+\brief
+*/
+inline Vector3 Plane::Point() const
+{
+	return p;
+}
+
+/*!
+\brief
+*/
+inline bool Plane::Intersection(const Plane& a, const Plane& b, const Plane& c, Vector3& p)
+{
+	float e = Matrix4(Matrix3(a.Normal(), b.Normal(), c.Normal())).Determinant();
+	if (e < 1e-06)
+		return false;
+	p = (Dot(a.Point(), a.Normal()) * Cross(b.Normal(), c.Normal())) + (Dot(b.Point(), b.Normal()) * Cross(c.Normal(), a.Normal())) + (Dot(c.Point(), c.Normal()) * Cross(a.Normal(), b.Normal()));
+	p = p / (-e);
+	return true;
+}
+
+/*!
+\brief Compute the intersection of a set of half spaces.
+
+This is a O(n^4) algorithm.
+
+A better version in O(n^3) could be implemented: see Finding the Intersection
+of Half-Spaces in Time O(n ln n). Preparata and Muller, Theoretical Computer Science 8, 45-55, 1979.
+
+Returns a set of point representing the minimal convex polygon embedding all half spaces.
+The function doesn't check if the intersection is bounded or not.
+
+\param planes Set of planes.
+*/
+inline std::vector<Vector3> Plane::ConvexPoints(const std::vector<Plane>& planes)
+{
+	std::vector<Vector3> pts;
+	for (int i = 0; i < planes.size(); i++)
+	{
+		for (int j = i + 1; j < planes.size(); j++)
+		{
+			for (int k = j + 1; k < planes.size(); k++)
+			{
+				Vector3 p;
+				bool intersect = Intersection(planes[i], planes[j], planes[k], p);
+				if (intersect)
+				{
+					bool isInside = true;
+					for (int l = 0; l < planes.size(); l++)
+					{
+						// Do not check point ijk with one of its generating plane
+						if (l == i || l == j || l == k)
+							continue;
+						int s = planes[l].Side(p);
+						if (s > 0)
+						{
+							isInside = false;
+							break;
+						}
+					}
+					if (isInside)
+						pts.push_back(p);
+				}
+			}
+		}
+	}
+	return pts;
+}
 
 
 // 3D Triangle
@@ -97,6 +198,27 @@ public:
 	Vector3 Center() const;
 	Vector3 Normal() const;
 };
+
+inline Triangle::Triangle()
+{
+}
+
+inline Triangle::Triangle(const Vector3& a, const Vector3& b, const Vector3& c)
+{
+	pts[0] = a;
+	pts[1] = b;
+	pts[2] = c;
+}
+
+inline Vector3 Triangle::Center() const
+{
+	return (pts[0] + pts[1] + pts[2]) / 3.0f;
+}
+
+inline Vector3 Triangle::Normal() const
+{
+	return Normalize(Cross(pts[1] - pts[0], pts[2] - pts[0]));
+}
 
 
 // AABB 3D
@@ -584,7 +706,7 @@ public:
 /*
 \brief
 */
-Circle::Circle(const Vector3& c, const Vector3& n, float r)
+inline Circle::Circle(const Vector3& c, const Vector3& n, float r)
 {
 	center = c;
 	normal = n;
@@ -594,7 +716,7 @@ Circle::Circle(const Vector3& c, const Vector3& n, float r)
 /*
 \brief
 */
-Vector3 Circle::Center() const
+inline Vector3 Circle::Center() const
 {
 	return center;
 }
@@ -602,7 +724,7 @@ Vector3 Circle::Center() const
 /*
 \brief
 */
-Vector3 Circle::Normal() const
+inline Vector3 Circle::Normal() const
 {
 	return normal;
 }
@@ -610,9 +732,28 @@ Vector3 Circle::Normal() const
 /*
 \brief
 */
-float Circle::Radius() const
+inline float Circle::Radius() const
 {
 	return radius;
+}
+
+/*!
+\brief Compute the ray-disc intersection.
+\param ray The ray.
+\param t Intersection depth.
+*/
+inline bool Circle::Intersect(const Ray& ray, float& t) const
+{
+	float e = Dot(normal, ray.d);
+	if (fabs(e) < 1e-6f)
+		return false;
+	t = Dot(center - ray.o, normal) / e;
+	if (t < 0.0f)
+		return false;
+	Vector3 p = ray(t) - center;
+	if (Dot(p, p) > radius * radius)
+		return false;
+	return true;
 }
 
 

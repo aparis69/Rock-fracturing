@@ -309,6 +309,10 @@ inline bool operator<=(const Vector3& u, const Vector3& v)
 {
 	return (u.x <= v.x) && (u.y <= v.y) && (u.z <= v.z);
 }
+inline Vector3 operator*(float a, const Vector3& v)
+{
+	return v * a;
+}
 
 
 /* Vector2 */
@@ -443,4 +447,133 @@ inline bool operator>=(const Vector2& u, const Vector2& v)
 inline bool operator<=(const Vector2& u, const Vector2& v)
 {
 	return (u.x <= v.x) && (u.y <= v.y);
+}
+
+
+/* Matrix3 */
+struct Matrix3
+{
+public:
+	float r[9];
+
+	Matrix3();
+	Matrix3(const Vector3& a, const Vector3& b, const Vector3& c);
+	Matrix3(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
+	float Determinant() const;
+	constexpr float& operator() (int, int);
+	constexpr float operator() (int, int) const;
+};
+
+inline Matrix3::Matrix3()
+{
+}
+
+inline Matrix3::Matrix3(const Vector3& a, const Vector3& b, const Vector3& c)
+{
+	r[0] = a[0];
+	r[1] = a[1];
+	r[2] = a[2];
+
+	r[3] = b[0];
+	r[4] = b[1];
+	r[5] = b[2];
+
+	r[6] = c[0];
+	r[7] = c[1];
+	r[8] = c[2];
+}
+
+inline Matrix3::Matrix3(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22)
+{
+	r[0] = a00;
+	r[1] = a01;
+	r[2] = a02;
+
+	r[3] = a10;
+	r[4] = a11;
+	r[5] = a12;
+
+	r[6] = a20;
+	r[7] = a21;
+	r[8] = a22;
+}
+
+inline float Matrix3::Determinant() const
+{
+	return r[0] * r[4] * r[8] + r[1] * r[5] * r[6] + r[2] * r[3] * r[7] - r[2] * r[4] * r[6] - r[1] * r[3] * r[8] - r[0] * r[5] * r[7];
+}
+
+inline constexpr float& Matrix3::operator() (int i, int j)
+{
+	return r[i + j + j + j];
+}
+
+inline constexpr float Matrix3::operator() (int i, int j) const
+{
+	return r[i + j + j + j];
+}
+
+
+/* Matrix4 */
+struct Matrix4
+{
+public:
+	float r[16];
+
+	Matrix4();
+	Matrix4(const Matrix3& m3);
+	constexpr float& operator() (int, int);
+	constexpr float operator() (int, int) const;
+	float Determinant() const;
+};
+
+inline Matrix4::Matrix4()
+{
+}
+
+/*!
+\brief Create an homogeneous matrix from a simple Matrix.
+The translation and shear coefficients are set to 0.0.
+\param a Matrix.
+*/
+inline Matrix4::Matrix4(const Matrix3& a)
+{
+	// Rotation and scale
+	r[0] = a.r[0];
+	r[1] = a.r[1];
+	r[2] = a.r[2];
+	r[4] = a.r[3];
+	r[5] = a.r[4];
+	r[6] = a.r[5];
+	r[8] = a.r[6];
+	r[9] = a.r[7];
+	r[10] = a.r[8];
+
+	// Translation
+	r[3] = r[7] = r[11] = 0.0;
+
+	// Shear
+	r[12] = r[13] = r[14] = 0.0;
+
+	// Scale
+	r[15] = 1.0;
+}
+
+inline constexpr float& Matrix4::operator() (int i, int j)
+{
+	return r[i + j + j + j];
+}
+
+inline constexpr float Matrix4::operator() (int i, int j) const
+{
+	return r[i + j + j + j];
+}
+
+inline float Matrix4::Determinant() const
+{
+	const Matrix4& M = *this;
+	return M(0, 0) * Matrix3(M(1, 1), M(1, 2), M(1, 3), M(2, 1), M(2, 2), M(2, 3), M(3, 1), M(3, 2), M(3, 3)).Determinant()
+			- M(1, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(2, 1), M(2, 2), M(2, 3), M(3, 1), M(3, 2), M(3, 3)).Determinant()
+			+ M(2, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(1, 1), M(1, 2), M(1, 3), M(3, 1), M(3, 2), M(3, 3)).Determinant()
+			- M(3, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(1, 1), M(1, 2), M(1, 3), M(2, 1), M(2, 2), M(2, 3)).Determinant();
 }
