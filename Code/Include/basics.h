@@ -124,12 +124,32 @@ inline Vector3 Plane::Point() const
 }
 
 /*!
+\brief Check if a point lies inside, outside or even on the plane.
+The epsilon tolerance used for testing if the point is on the plane
+is 10<SUP>-6</SUP>.
+\param p Point.
+*/
+inline int Plane::Side(const Vector3& pp) const
+{
+	float c = Dot(p, n);
+	float r = Dot(n, pp) - c;
+
+	// Epsilon test
+	if (r > 1e-6f)
+		return 1;
+	else if (r < -1e-6f)
+		return -1;
+	else
+		return 0;
+}
+
+/*!
 \brief
 */
 inline bool Plane::Intersection(const Plane& a, const Plane& b, const Plane& c, Vector3& p)
 {
 	float e = Matrix4(Matrix3(a.Normal(), b.Normal(), c.Normal())).Determinant();
-	if (e < 1e-06)
+	if (e < 1e-06f)
 		return false;
 	p = (Dot(a.Point(), a.Normal()) * Cross(b.Normal(), c.Normal())) + (Dot(b.Point(), b.Normal()) * Cross(c.Normal(), a.Normal())) + (Dot(c.Point(), c.Normal()) * Cross(a.Normal(), b.Normal()));
 	p = p / (-e);
@@ -138,15 +158,11 @@ inline bool Plane::Intersection(const Plane& a, const Plane& b, const Plane& c, 
 
 /*!
 \brief Compute the intersection of a set of half spaces.
-
 This is a O(n^4) algorithm.
-
 A better version in O(n^3) could be implemented: see Finding the Intersection
 of Half-Spaces in Time O(n ln n). Preparata and Muller, Theoretical Computer Science 8, 45-55, 1979.
-
 Returns a set of point representing the minimal convex polygon embedding all half spaces.
 The function doesn't check if the intersection is bounded or not.
-
 \param planes Set of planes.
 */
 inline std::vector<Vector3> Plane::ConvexPoints(const std::vector<Plane>& planes)

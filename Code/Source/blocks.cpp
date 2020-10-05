@@ -115,7 +115,7 @@ FractureSet GenerateFractures(FractureType type, const Box& box, float r)
 		{
 			int a = Random::Integer() % 3;
 			Vector3 axis = a == 0 ? Vector3(0.5, 0.5, 0) : a == 1 ? Vector3(0, 0.5, 0.5) : Vector3(0.5, 0, 0.5);
-			float r = Random::Uniform(3.0, 7.0);
+			float r = Random::Uniform(10.0f, 15.0f);
 			set.fractures.push_back(Circle(samples.At(i), axis, r));
 		}
 	}
@@ -125,7 +125,7 @@ FractureSet GenerateFractures(FractureType type, const Box& box, float r)
 		PointSet3 samples = PoissonSamplingCube(box, 1.0, 1000);
 		for (int i = 0; i < samples.Size(); i++)
 		{
-			float r = Random::Uniform(2.0, 8.0);
+			float r = Random::Uniform(2.0f, 12.0f);
 			Vector3 axis = Sphere(Vector3(0), 1.0).RandomSurface();
 			set.fractures.push_back(Circle(samples.At(i), axis, r));
 		}
@@ -133,28 +133,27 @@ FractureSet GenerateFractures(FractureType type, const Box& box, float r)
 	else if (type == FractureType::Tabular)
 	{
 		// "One dominant set of parallel joints, for example bedding planes, with other non-persistent joints; thickness of blocks much less than length or width."
-		// Z Axis
-		const int fracturing = 15;
+		// Y Axis
+		const int fracturing = 10;
 		Vector3 p = box[0];
-		p[0] += box.Diagonal()[0] / 2.0f;
-		p[1] += box.Diagonal()[1] / 2.0f;
+		p.x += box.Diagonal()[0] / 2.0f;
+		p.z += box.Diagonal()[1] / 2.0f;
 		float step = box.Size()[2] / float(fracturing);
 		float noiseStep = step / 10.0f;
 		for (int i = 0; i < fracturing - 1; i++)
 		{
-			p[2] += step + Random::Uniform(-noiseStep, noiseStep);
-			Vector3 axis = Vector3(0, 0, 1);
-			Vector3 tiltedAxis = axis; // No tilting for tabular tiles
-			set.fractures.push_back(Circle(p, tiltedAxis, 20.0));
+			p.y += step + Random::Uniform(-noiseStep, noiseStep);
+			Vector3 axis = Vector3(0, -1, 0);
+			set.fractures.push_back(Circle(p, axis, 20.0));
 		}
 
-		PointSet3 poissonSamples = PoissonSamplingCube(box, 1.0, fracturing * 6.0);
+		/*PointSet3 poissonSamples = PoissonSamplingCube(box, 1.0, fracturing * 6.0);
 		for (int i = 0; i < poissonSamples.Size(); i++)
 		{
 			float r = Random::Uniform(1.5f, 3.0f);
-			Vector3 axis = (Random::Integer() % 2) == 0 ? Vector3(1, 0, 0) : Vector3(0, 1, 0);
+			Vector3 axis = (Random::Integer() % 2) == 0 ? Vector3(1, 0, 0) : Vector3(0, 0, 1);
 			set.fractures.push_back(Circle(poissonSamples.At(i), axis, r));
-		}
+		}*/
 	}
 	return set;
 }
@@ -247,7 +246,7 @@ std::vector<BlockMesh> ComputeBlockMeshes(const std::vector<BlockCluster>& clust
 		if (nFaces == 0)
 			continue;
 
-		// Extract the mesh.
+		// Extract the mesh
 		std::vector<Triangle> meshTriangles;
 		for (int i = 0; i < nFaces; i++)
 		{
