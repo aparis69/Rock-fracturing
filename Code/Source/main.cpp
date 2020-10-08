@@ -20,7 +20,7 @@ static void ComputeAndExportTile(FractureType t, const char* filename)
 	Box tile = Box(Vector3(0), tileSize / 2.0f);
 
 	// (1) Sample a cubic tile
-	PointSet3 samples = PoissonSamplingCube(tile, 0.5f, 10000);
+	PointSet3 samples = PoissonSamplingBox(tile, 0.5f, 10000);
 
 	// (2) Generate fracture distribution
 	auto fractures = GenerateFractures(type, tile, 3);
@@ -28,39 +28,28 @@ static void ComputeAndExportTile(FractureType t, const char* filename)
 	// (3) Clustering
 	auto clusters = ComputeBlockClusters(samples, fractures);
 
+	// (4) Implicit primitive extraction
+	auto sdf = ComputeBlockSDF(clusters);
+
 	// (4) Mesh extraction
-	auto meshes = ComputeBlockMeshes(clusters);
+	MC::mcMesh mesh = PolygonizeSDF(tile, sdf);
 
-	//
-	// From there, we can either play with the generated meshes, or extract
-	// Implicit primitives as we do in the paper. In this code, we only
-	// Export the generated meshes so that you can visualize them in another Application.
-	//
-
-	// Export all blocks in the same .obj file
+	// Export in .obj file
 	std::ofstream out;
 	out.open(filename);
 	if (out.is_open() == false)
 		return;
-	out << "o " << "Obj" << std::endl;
-	int meshOffset = 0;
-	for (int i = 0; i < meshes.size(); i++)
+	out << "g " << "Obj" << std::endl;
+	for (size_t i = 0; i < mesh.vertices.size(); i++)
+		out << "v " << mesh.vertices.at(i).x << " " << mesh.vertices.at(i).y << " " << mesh.vertices.at(i).z << '\n';
+	for (size_t i = 0; i < mesh.vertices.size(); i++)
+		out << "vn " << mesh.normals.at(i).x << " " << mesh.normals.at(i).y << " " << mesh.normals.at(i).z << '\n';
+	for (size_t i = 0; i < mesh.indices.size(); i += 3)
 	{
-		for (int j = 0; j < meshes[i].triangles.size(); j++)
-		{
-			Vector3 n = meshes[i].triangles[j].Normal();
-			for (int k = 0; k < 3; k++)
-			{
-				Vector3 p = meshes[i].triangles[j].Point(k);
-				out << "v " << p.x << " " << p.y << " " << p.z << '\n';
-				out << "vn " << n.x << " " << n.y << " " << n.z << '\n';
-			}
-			out << "f " << (j * 3) + meshOffset + 1 << "//" << (j * 3) + meshOffset + 1
-				<< " " << (j * 3) + meshOffset + 2 << "//" << (j * 3) + meshOffset + 2
-				<< " " << (j * 3) + meshOffset + 3 << "//" << (j * 3) + meshOffset + 3
-				<< '\n';
-		}
-		meshOffset += meshes[i].triangles.size() * 3;
+		out << "f " << mesh.indices.at(i) + 1 << "//" << mesh.indices.at(i) + 1
+			<< " " << mesh.indices.at(i + 1) + 1 << "//" << mesh.indices.at(i + 1) + 1
+			<< " " << mesh.indices.at(i + 2) + 1 << "//" << mesh.indices.at(i + 2) + 1
+			<< '\n';
 	}
 	out.close();
 }

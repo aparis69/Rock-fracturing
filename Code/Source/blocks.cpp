@@ -5,14 +5,25 @@
 #define CONVHULL_3D_ENABLE
 #include "convhull_3d.h"
 
+// Source: https://github.com/aparis69/MarchingCubeCpp
+#define MC_IMPLEM_ENABLE
+#include "MC.h"
+
+// Multithread field function computation
+#include <omp.h>
+
+
 /*!
-\brief
+\brief Check if a given point can be linked to a candidate.
+\param p point
+\param c the candidate
+\param fractures fracture set
 */
-static bool BreakFractureConstraint(const Vector3& p, const Vector3& candidate, const FractureSet& fractures)
+static bool BreakFractureConstraint(const Vector3& p, const Vector3& c, const FractureSet& fractures)
 {
 	bool intersect = false;
-	float tmax = Magnitude(p - candidate);
-	Ray ray = Ray(p, Normalize(candidate - p));
+	float tmax = Magnitude(p - c);
+	Ray ray = Ray(p, Normalize(c - p));
 	for (int c = 0; c < fractures.Size(); c++)
 	{
 		float t;
@@ -26,12 +37,10 @@ static bool BreakFractureConstraint(const Vector3& p, const Vector3& candidate, 
 }
 
 /*!
-\brief
+\brief Check if the candidate can be linked to all other node in the cluster, without breaking a constraint or being too far.
 */
 static bool CanBeLinkedToCluster(const Vector3& candidate, const std::vector<Vector3>& cluster, const FractureSet& fractures, float R_Max)
 {
-	// Check if the candidate can be linked to all other node in the cluster
-	// Without breaking a constraint or being too far
 	bool canBeLinked = true;
 	for (int i = 0; i < cluster.size(); i++)
 	{
@@ -63,9 +72,12 @@ static bool CanBeLinkedToCluster(const Vector3& candidate, const std::vector<Vec
 
 
 /*!
-\brief
+\brief Poisson sampling inside a 3D box, using dart-throwing.
+\param box
+\param r poisson radius
+\param n number of try
 */
-PointSet3 PoissonSamplingCube(const Box& box, float r, int n)
+PointSet3 PoissonSamplingBox(const Box& box, float r, int n)
 {
 	PointSet3 set;
 	float c = 4.0f * r * r;
@@ -88,7 +100,11 @@ PointSet3 PoissonSamplingCube(const Box& box, float r, int n)
 }
 
 /*!
-\brief
+\brief Fracture generation inside a box, from the fracture type.
+Code is sometimes duplicated in this function.
+\param type fracture type
+\param box the box in which to distribute fractures
+\param r radius influencing the distance between fracture centers.
 */
 FractureSet GenerateFractures(FractureType type, const Box& box, float r)
 {
@@ -97,7 +113,7 @@ FractureSet GenerateFractures(FractureType type, const Box& box, float r)
 	{
 		// "Three dominant sets of joints, approximately orthogonal, with occasional irregular joints, giving equidimensional blocks"
 		Box inflatedRockDomain = box.Extended(Vector3(-3.0));
-		PointSet3 samples = PoissonSamplingCube(inflatedRockDomain, 3.0, 1000);
+		PointSet3 samples = PoissonSamplingBox(inflatedRockDomain, 3.0, 1000);
 		for (int i = 0; i < samples.Size(); i++)
 		{
 			int a = Random::Integer() % 3;
@@ -110,7 +126,7 @@ FractureSet GenerateFractures(FractureType type, const Box& box, float r)
 	{
 		// "Three (or more) dominant mutually oblique sets of joints, giving oblique-shaped, equidimensional blocks."
 		Box inflatedRockDomain = box.Extended(Vector3(-3.0));
-		PointSet3 samples = PoissonSamplingCube(inflatedRockDomain, 3.0, 1000);
+		PointSet3 samples = PoissonSamplingBox(inflatedRockDomain, 3.0, 1000);
 		for (int i = 0; i < samples.Size(); i++)
 		{
 			int a = Random::Integer() % 3;
@@ -122,7 +138,7 @@ FractureSet GenerateFractures(FractureType type, const Box& box, float r)
 	else if (type == FractureType::Polyhedral)
 	{
 		// "Irregular jointing without arrangement into distinct sets, and of small joints"
-		PointSet3 samples = PoissonSamplingCube(box, 1.0, 1000);
+		PointSet3 samples = PoissonSamplingBox(box, 1.0, 1000);
 		for (int i = 0; i < samples.Size(); i++)
 		{
 			float r = Random::Uniform(2.0f, 12.0f);
@@ -146,20 +162,15 @@ FractureSet GenerateFractures(FractureType type, const Box& box, float r)
 			Vector3 axis = Vector3(0, -1, 0);
 			set.fractures.push_back(Circle(p, axis, 20.0));
 		}
-
-		/*PointSet3 poissonSamples = PoissonSamplingCube(box, 1.0, fracturing * 6.0);
-		for (int i = 0; i < poissonSamples.Size(); i++)
-		{
-			float r = Random::Uniform(1.5f, 3.0f);
-			Vector3 axis = (Random::Integer() % 2) == 0 ? Vector3(1, 0, 0) : Vector3(0, 0, 1);
-			set.fractures.push_back(Circle(poissonSamples.At(i), axis, r));
-		}*/
 	}
 	return set;
 }
 
 /*!
-\brief
+\brief Clustering step of the algorithm. We first build the constrained nearest neighbour graph
+between samples, then perform a flood fill algorithm to get isolated clusters of points.
+\param set samples of the cubic tile
+\param frac the fractures
 */
 std::vector<BlockCluster> ComputeBlockClusters(PointSet3& set, const FractureSet& frac)
 {
@@ -218,16 +229,19 @@ std::vector<BlockCluster> ComputeBlockClusters(PointSet3& set, const FractureSet
 			clusters.push_back({ cluster });
 		}
 	}
-	std::cout << "Average cluster size: " << float(averageClusterSize) / clusters.size() << std::endl;
 	return clusters;
 }
 
 /*!
-\brief
+\brief Implicit primitive generation from the block clusters. This function is very similar to ComputeBlockMeshes,
+but instead of extracting a mesh, we create an implicit primitive for each block defined as the smooth intersection
+of half spaces. This is the function used in the paper - ComputeBlockMeshes is only here if you want to play with the
+raw meshes.
+\param clusters
 */
-std::vector<BlockMesh> ComputeBlockMeshes(const std::vector<BlockCluster>& clusters)
+std::vector<BlockSDF> ComputeBlockSDF(const std::vector<BlockCluster>& clusters)
 {
-	std::vector<BlockMesh> meshes;
+	std::vector<BlockSDF> primitives;
 	for (int k = 0; k < clusters.size(); k++)
 	{
 		std::vector<Plane> ret;
@@ -246,21 +260,61 @@ std::vector<BlockMesh> ComputeBlockMeshes(const std::vector<BlockCluster>& clust
 		if (nFaces == 0)
 			continue;
 
-		// Extract the mesh
-		std::vector<Triangle> meshTriangles;
+		// Extract planes from hull triangle
+		std::vector<Plane> planes;
 		for (int i = 0; i < nFaces; i++)
 		{
 			const int j = i * 3;
 			Vector3 v1 = Vector3(vertices[faceIndices[j + 0]].x, vertices[faceIndices[j + 0]].y, vertices[faceIndices[j + 0]].z);
 			Vector3 v2 = Vector3(vertices[faceIndices[j + 1]].x, vertices[faceIndices[j + 1]].y, vertices[faceIndices[j + 1]].z);
 			Vector3 v3 = Vector3(vertices[faceIndices[j + 2]].x, vertices[faceIndices[j + 2]].y, vertices[faceIndices[j + 2]].z);
-			meshTriangles.push_back(Triangle(v1, v2, v3));
+			Vector3 pn = Triangle(v1, v2, v3).Normal();
+			planes.push_back(Plane(v1, pn));
 		}
-		meshes.push_back(BlockMesh({ meshTriangles }));
+		
+		// @Warning: this cannot work in all cases: the correct smoothing radius must depend on
+		// The actual size of the convex primitive formed by the intersection of planes.
+		// So artifacts may occur by using a constant.
+		const double smoothRadius = 0.25;	
+		primitives.push_back(BlockSDF(planes, smoothRadius));
 
 		// Free memory
 		delete[] vertices;
 		delete[] faceIndices;
 	}
-	return meshes;
+	return primitives;
+}
+
+/*!
+\brief Polygonization function of the implicit primitives using marching cubes.
+\param sdf implicit block functions
+*/
+MC::mcMesh PolygonizeSDF(const Box& box, const std::vector<BlockSDF>& sdf)
+{
+	// Compute field function
+	const int n = 100;
+	MC::MC_FLOAT* field = new MC::MC_FLOAT[n * n * n];
+	Vector3 cellDiagonal = (box[1] - box[0]) / (n - 1);
+	{
+#pragma omp parallel for num_threads(16) shared(field)
+		for (int i = 0; i < n; i++)
+		{
+			for (int j = 0; j < n; j++)
+			{
+				for (int k = 0; k < n; k++)
+				{
+					Vector3 p = Vector3(box[0][0] + i * cellDiagonal[0], box[0][1] + j * cellDiagonal[1], box[0][2] + k * cellDiagonal[2]);
+					float d = 10000000.0f;
+					for (int l = 0; l < sdf.size(); l++)
+						d = Math::Min(d, sdf[l].Signed(p));
+					field[(k * n + j) * n + i] = d;
+				}
+			}
+		}
+	}
+	
+	// Polygonize
+	MC::mcMesh mesh;
+	MC::marching_cube(field, n, n, n, mesh);
+	return mesh;
 }

@@ -79,6 +79,7 @@ class Plane
 protected:
 	Vector3 p;
 	Vector3 n;
+	float c;
 
 public:
 	Plane();
@@ -87,6 +88,7 @@ public:
 	Vector3 Normal() const;
 	Vector3 Point() const;
 	int Side(const Vector3& p) const;
+	float Signed(const Vector3& p) const;
 	static bool Intersection(const Plane& a, const Plane& b, const Plane& c, Vector3& p);
 	static std::vector<Vector3> ConvexPoints(const std::vector<Plane>& planes);
 };
@@ -105,6 +107,7 @@ inline Plane::Plane(const Vector3& pp, const Vector3& nn)
 {
 	p = pp;
 	n = nn;
+	c = Dot(p, n);
 }
 
 /*!
@@ -113,6 +116,15 @@ inline Plane::Plane(const Vector3& pp, const Vector3& nn)
 inline Vector3 Plane::Normal() const
 {
 	return n;
+}
+
+/*!
+\brief Computes the signed distance to the plane.
+\param p point
+*/
+inline float Plane::Signed(const Vector3& pp) const
+{
+	return Dot(n, pp) - c;
 }
 
 /*!
