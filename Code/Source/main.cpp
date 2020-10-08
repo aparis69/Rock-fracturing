@@ -62,9 +62,18 @@ to reproduce it.
 int main()
 {
 	srand((unsigned int)(time(NULL)));
+	
 	ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
-	//ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
-	//ComputeAndExportTile(FractureType::Polyhedral,		"tile_polyhedral.obj");
-	//ComputeAndExportTile(FractureType::Tabular,			"tile_tabular.obj");
+	std::cout << "Equidimensional tile done" << std::endl;
+
+	ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
+	std::cout << "Rhombohedral tile done" << std::endl;
+
+	ComputeAndExportTile(FractureType::Polyhedral,		"tile_polyhedral.obj");
+	std::cout << "Polyhedral tile done" << std::endl;
+
+	ComputeAndExportTile(FractureType::Tabular,			"tile_tabular.obj");
+	std::cout << "Tabular tile done" << std::endl;
+
 	return 0;
 }
