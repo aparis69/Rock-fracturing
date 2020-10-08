@@ -21,7 +21,7 @@ solution "RockFracturing"
 		buildoptions { "-std=c++14" }
 		buildoptions { "-w" }
 		buildoptions { "-flto -g"}
-		buildoptions { "-fopenmp"}
+		linkoptions { "-fopenmp"}
 		linkoptions { "-flto"}
 		linkoptions { "-g"}
 

@@ -208,7 +208,7 @@ namespace MC
 	/*
 	\brief
 	*/
-	static inline void setDefaultArraySizes(muint vertSize, muint normSize, muint triSize)
+	void setDefaultArraySizes(muint vertSize, muint normSize, muint triSize)
 	{
 		defaultVerticeArraySize = vertSize;
 		defaultNormalArraySize = normSize;
@@ -224,7 +224,7 @@ namespace MC
 	\param nz grid dimension
 	\param outputMesh output of the function
 	*/
-	static void marching_cube(MC_FLOAT* field, muint nx, muint ny, muint nz, mcMesh& outputMesh)
+	void marching_cube(MC_FLOAT* field, muint nx, muint ny, muint nz, mcMesh& outputMesh)
 	{
 		outputMesh.vertices.reserve(defaultVerticeArraySize);
 		outputMesh.normals.reserve(defaultNormalArraySize);

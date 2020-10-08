@@ -466,8 +466,8 @@ public:
 	Matrix3(const Vector3& a, const Vector3& b, const Vector3& c);
 	Matrix3(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
 	float Determinant() const;
-	constexpr float& operator() (int, int);
-	constexpr float operator() (int, int) const;
+	float& operator() (int, int);
+	float operator() (int, int) const;
 };
 
 inline Matrix3::Matrix3()
@@ -509,12 +509,12 @@ inline float Matrix3::Determinant() const
 	return r[0] * r[4] * r[8] + r[1] * r[5] * r[6] + r[2] * r[3] * r[7] - r[2] * r[4] * r[6] - r[1] * r[3] * r[8] - r[0] * r[5] * r[7];
 }
 
-inline constexpr float& Matrix3::operator() (int i, int j)
+inline float& Matrix3::operator() (int i, int j)
 {
 	return r[i + j + j + j];
 }
 
-inline constexpr float Matrix3::operator() (int i, int j) const
+inline float Matrix3::operator() (int i, int j) const
 {
 	return r[i + j + j + j];
 }
@@ -528,8 +528,8 @@ public:
 
 	Matrix4();
 	Matrix4(const Matrix3& m3);
-	constexpr float& operator() (int, int);
-	constexpr float operator() (int, int) const;
+	float& operator() (int, int);
+	float operator() (int, int) const;
 	float Determinant() const;
 };
 
@@ -565,12 +565,12 @@ inline Matrix4::Matrix4(const Matrix3& a)
 	r[15] = 1.0;
 }
 
-inline constexpr float& Matrix4::operator() (int i, int j)
+inline float& Matrix4::operator() (int i, int j)
 {
 	return r[i + j + j + j];
 }
 
-inline constexpr float Matrix4::operator() (int i, int j) const
+inline float Matrix4::operator() (int i, int j) const
 {
 	return r[i + j + j + j];
 }

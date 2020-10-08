@@ -74,9 +74,9 @@ float BlockSDF::WarpingStrength(const Vector3& p, const Vector3& n) const
 	Vector2 z = Abs(Vector2(p[1], p[0])) * texScale;
 
 	float tmp;
-	x = Vector2(modf(x[0], &tmp), modf(x[1], &tmp));
-	y = Vector2(modf(y[0], &tmp), modf(y[1], &tmp));
-	z = Vector2(modf(z[0], &tmp), modf(z[1], &tmp));
+	x = Vector2(modff(x[0], &tmp), modff(x[1], &tmp));
+	y = Vector2(modff(y[0], &tmp), modff(y[1], &tmp));
+	z = Vector2(modff(z[0], &tmp), modff(z[1], &tmp));
 
 	// Blend weights
 	Vector3 ai = Abs(n);
