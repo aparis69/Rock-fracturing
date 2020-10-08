@@ -28,7 +28,7 @@ public:
 
 	inline int Size() const
 	{
-		return pts.size();
+		return int(pts.size());
 	}
 };
 
@@ -49,7 +49,7 @@ public:
 
 	inline int Size() const
 	{
-		return fractures.size();
+		return int(fractures.size());
 	}
 };
 

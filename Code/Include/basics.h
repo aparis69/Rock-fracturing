@@ -98,6 +98,9 @@ public:
 */
 inline Plane::Plane()
 {
+	p = Vector3(0);
+	n = Vector3(0);
+	c = 0.0f;
 }
 
 /*!

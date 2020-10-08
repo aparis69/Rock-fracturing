@@ -472,6 +472,8 @@ public:
 
 inline Matrix3::Matrix3()
 {
+	for (int i = 0; i < 9; i++)
+		r[i] = 0.0f;
 }
 
 inline Matrix3::Matrix3(const Vector3& a, const Vector3& b, const Vector3& c)
@@ -535,6 +537,8 @@ public:
 
 inline Matrix4::Matrix4()
 {
+	for (int i = 0; i < 16; i++)
+		r[i] = 0.0f;
 }
 
 /*!

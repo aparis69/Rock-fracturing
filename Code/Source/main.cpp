@@ -61,7 +61,7 @@ to reproduce it.
 */
 int main()
 {
-	srand(time(NULL));
+	srand(unsigned int(time(NULL)));
 	ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
 	//ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
 	//ComputeAndExportTile(FractureType::Polyhedral,		"tile_polyhedral.obj");

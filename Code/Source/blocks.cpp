@@ -56,11 +56,11 @@ float BlockSDF::SignedSmoothConvex(const Vector3& p) const
 */
 Vector3 BlockSDF::Gradient(const Vector3& p) const
 {
-	static const double Epsilon = 0.01;
+	static const float Epsilon = 0.01f;
 	float x = SignedSmoothConvex(Vector3(p[0] - Epsilon, p[1], p[2])) - SignedSmoothConvex(Vector3(p[0] + Epsilon, p[1], p[2]));
 	float y = SignedSmoothConvex(Vector3(p[0], p[1] - Epsilon, p[2])) - SignedSmoothConvex(Vector3(p[0], p[1] + Epsilon, p[2]));
 	float z = SignedSmoothConvex(Vector3(p[0], p[1], p[2] - Epsilon)) - SignedSmoothConvex(Vector3(p[0], p[1], p[2] + Epsilon));
-	return Vector3(x, y, z) * (0.5 / Epsilon);
+	return Vector3(x, y, z) * (0.5f / Epsilon);
 }
 
 /*!
@@ -68,7 +68,7 @@ Vector3 BlockSDF::Gradient(const Vector3& p) const
 */
 float BlockSDF::WarpingStrength(const Vector3& p, const Vector3& n) const
 {
-	const float texScale = 0.1642;						// Hardcoded because it looks good
+	const float texScale = 0.1642f;						// Hardcoded because it looks good
 	Vector2 x = Abs(Vector2(p[2], p[1])) * texScale;
 	Vector2 y = Abs(Vector2(p[0], p[2])) * texScale;
 	Vector2 z = Abs(Vector2(p[1], p[0])) * texScale;
@@ -292,7 +292,6 @@ std::vector<BlockCluster> ComputeBlockClusters(PointSet3& set, const FractureSet
 	const float R_Max_Block = 10.5f * 10.5f;
 	std::vector<bool> visitedFlags;
 	visitedFlags.resize(allPtsSize, false);
-	int averageClusterSize = 0;
 	std::vector<BlockCluster> clusters;
 	for (int j = 0; j < allPtsSize; j++)
 	{
@@ -320,7 +319,6 @@ std::vector<BlockCluster> ComputeBlockClusters(PointSet3& set, const FractureSet
 		}
 		if (cluster.size() > 10)
 		{
-			averageClusterSize += cluster.size();
 			clusters.push_back({ cluster });
 		}
 	}
@@ -343,7 +341,7 @@ std::vector<BlockSDF> ComputeBlockSDF(const std::vector<BlockCluster>& clusters)
 		std::vector<Vector3> allPts = clusters[k].pts;
 
 		// Compute convex hull
-		int n = allPts.size();
+		int n = int(allPts.size());
 		if (n <= 4)
 			continue;
 		ch_vertex* vertices = new ch_vertex[n];
@@ -360,9 +358,9 @@ std::vector<BlockSDF> ComputeBlockSDF(const std::vector<BlockCluster>& clusters)
 		for (int i = 0; i < nFaces; i++)
 		{
 			const int j = i * 3;
-			Vector3 v1 = Vector3(vertices[faceIndices[j + 0]].x, vertices[faceIndices[j + 0]].y, vertices[faceIndices[j + 0]].z);
-			Vector3 v2 = Vector3(vertices[faceIndices[j + 1]].x, vertices[faceIndices[j + 1]].y, vertices[faceIndices[j + 1]].z);
-			Vector3 v3 = Vector3(vertices[faceIndices[j + 2]].x, vertices[faceIndices[j + 2]].y, vertices[faceIndices[j + 2]].z);
+			Vector3 v1 = Vector3(float(vertices[faceIndices[j + 0]].x), float(vertices[faceIndices[j + 0]].y), float(vertices[faceIndices[j + 0]].z));
+			Vector3 v2 = Vector3(float(vertices[faceIndices[j + 1]].x), float(vertices[faceIndices[j + 1]].y), float(vertices[faceIndices[j + 1]].z));
+			Vector3 v3 = Vector3(float(vertices[faceIndices[j + 2]].x), float(vertices[faceIndices[j + 2]].y), float(vertices[faceIndices[j + 2]].z));
 			Vector3 pn = Triangle(v1, v2, v3).Normal();
 			planes.push_back(Plane(v1, pn));
 		}
