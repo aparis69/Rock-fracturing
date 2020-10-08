@@ -13,7 +13,7 @@ and presented at Computer Graphics International 2020. This is aimed at research
 * This is **research** code provided without any warranty. However, if you have any problem you can still send me an email or create an issue.
 
 ### Testing
-There is no dependency. Running the program will output 3 .obj files which can then be visualized in another application (Blender, MeshLab). Tests have been made on:
+There is no dependency. Running the program will output 4 .obj files which can then be visualized in another application (Blender, MeshLab). Tests have been made on:
 * Visual Studio 2019: double click on the solution in ./VS2019/ and Ctrl + F5 to run
 * Ubuntu 16.04: cd ./G++/ && make && make run
 
