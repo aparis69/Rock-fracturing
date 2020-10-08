@@ -34,5 +34,7 @@ You can use this code in any way you want, however please credit the original ar
 
 ### Missing
 There are still some things missing from the paper implementation. They might be added in the future if someone is interested. What is not in the code:
-* Implicit replication operator and associated primitives
+* Gradient-based warping operator (soon)
+* Implicit replication operator
+* Periodic and aperiodic tiling
 * Some result scenes

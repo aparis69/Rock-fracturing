@@ -14,6 +14,101 @@
 
 
 /*!
+\brief
+*/
+BlockSDF::BlockSDF(const std::vector<Plane>& pl, float sr)
+{
+	planes = pl;
+	smoothRadius = sr;
+}
+
+/*!
+\brief Generalized polynomial smoothing function between two distances.
+Union:  SmoothingPolynomial(a, b, smooth);
+Inter: -SmoothingPolynomial(-a, -b, smooth);
+Diffe:  SmoothingPolynomial(-d1, d2, smooth);
+\param a first distance
+\param b second distance
+\param sr smoothing radius
+*/
+float BlockSDF::SmoothingPolynomial(float d1, float d2, float sr) const
+{
+	float h = Math::Max(sr - Math::Abs(d1 - d2), 0.0f) / sr;
+	return Math::Min(d1, d2) - h * h * sr * 0.25f;
+}
+
+/*!
+\brief
+*/
+float BlockSDF::SignedSmoothConvex(const Vector3& p) const
+{
+	float d = planes.at(0).Signed(p);
+	for (int i = 1; i < planes.size(); i++)
+	{
+		float dd = planes.at(i).Signed(p);
+		d = -SmoothingPolynomial(-d, -dd, smoothRadius);
+	}
+	return d;
+}
+
+/*!
+\brief
+*/
+Vector3 BlockSDF::Gradient(const Vector3& p) const
+{
+	static const double Epsilon = 0.01;
+	float x = SignedSmoothConvex(Vector3(p[0] - Epsilon, p[1], p[2])) - SignedSmoothConvex(Vector3(p[0] + Epsilon, p[1], p[2]));
+	float y = SignedSmoothConvex(Vector3(p[0], p[1] - Epsilon, p[2])) - SignedSmoothConvex(Vector3(p[0], p[1] + Epsilon, p[2]));
+	float z = SignedSmoothConvex(Vector3(p[0], p[1], p[2] - Epsilon)) - SignedSmoothConvex(Vector3(p[0], p[1], p[2] + Epsilon));
+	return Vector3(x, y, z) * (0.5 / Epsilon);
+}
+
+/*!
+\brief
+*/
+float BlockSDF::WarpingStrength(const Vector3& p, const Vector3& n) const
+{
+	const float texScale = 0.1642;						// Hardcoded because it looks good
+	Vector2 x = Abs(Vector2(p[2], p[1])) * texScale;
+	Vector2 y = Abs(Vector2(p[0], p[2])) * texScale;
+	Vector2 z = Abs(Vector2(p[1], p[0])) * texScale;
+
+	float tmp;
+	x = Vector2(modf(x[0], &tmp), modf(x[1], &tmp));
+	y = Vector2(modf(y[0], &tmp), modf(y[1], &tmp));
+	z = Vector2(modf(z[0], &tmp), modf(z[1], &tmp));
+
+	// Blend weights
+	Vector3 ai = Abs(n);
+	ai = ai / (ai[0] + ai[1] + ai[2]);
+
+	/*
+		Todo(Axel): Replace "1.0f" with a bilinear interpolation from a texture 
+		to add micro-scale details to the blocks.
+	*/
+	// Blend everything
+	return    ai[0] * 0.0f
+			+ ai[1] * 0.0f
+			+ ai[2] * 0.0f;
+}
+
+/*!
+\brief Compute the signed distance to the block primitive.
+\param p point
+*/
+float BlockSDF::Signed(const Vector3& p) const
+{
+	// First compute gradient-based warping
+	Vector3 g = Gradient(p);
+	float s = 1.0f * WarpingStrength(p, -Normalize(g));
+
+	// Then compute contribution from the convex block
+	return SignedSmoothConvex(p + g * s);
+}
+
+
+
+/*!
 \brief Check if a given point can be linked to a candidate.
 \param p point
 \param c the candidate

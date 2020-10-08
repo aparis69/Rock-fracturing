@@ -1,10 +1,9 @@
 /*
 	This is an example implementation of some of the results described in the paper.
-	Three scenes (in three different files) can be run to export an .obj file.
+	Four scenes (in Four different files) can be run to export an .obj file.
 
-	To minimize dependencies, no realtime viewer is provided, and all input heightfields are
-	defined analytically with noise primitives. To compute the final isosurface, a public
-	domain marching-cube implementation is used.
+	To minimize dependencies, no realtime viewer is provided. To compute the final isosurface, 
+	a public domain marching-cube implementation is used.
 	
 	If you have any questions or problem to compile the code, you can contact me at:
 	axel(dot)paris(at)liris(dot)cnrs(dot)fr
@@ -32,7 +31,7 @@ static void ComputeAndExportTile(FractureType t, const char* filename)
 	auto sdf = ComputeBlockSDF(clusters);
 
 	// (4) Mesh extraction
-	MC::mcMesh mesh = PolygonizeSDF(tile, sdf);
+	MC::mcMesh mesh = PolygonizeSDF(tile.Extended(Vector3(2.0f)), sdf);
 
 	// Export in .obj file
 	std::ofstream out;
@@ -64,8 +63,8 @@ int main()
 {
 	srand(time(NULL));
 	ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
-	ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
-	ComputeAndExportTile(FractureType::Polyhedral,		"tile_polyhedral.obj");
-	ComputeAndExportTile(FractureType::Tabular,			"tile_tabular.obj");
+	//ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
+	//ComputeAndExportTile(FractureType::Polyhedral,		"tile_polyhedral.obj");
+	//ComputeAndExportTile(FractureType::Tabular,			"tile_tabular.obj");
 	return 0;
 }

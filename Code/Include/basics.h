@@ -913,6 +913,19 @@ public:
 		Fill(value);
 	}
 
+	/*!
+	\brief Constructor
+	\param nx size in x axis
+	\param ny size in y axis
+	\param bbox bounding box of the domain
+	\param value all values for the field
+	*/
+	inline ScalarField2D(int nx, int ny, const Box2D& bbox, const std::vector<float>& vals) : ScalarField2D(nx, ny, bbox)
+	{
+		for (int i = 0; i < vals.size(); i++)
+			values[i] = vals[i];
+	}
+
 	/*
 	\brief copy constructor
 	\param field Scalarfield2D to copy

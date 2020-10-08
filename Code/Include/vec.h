@@ -313,7 +313,10 @@ inline Vector3 operator*(float a, const Vector3& v)
 {
 	return v * a;
 }
-
+inline Vector3 Abs(const Vector3& u)
+{
+	return Vector3(u[0] > 0.0 ? u[0] : -u[0], u[1] > 0.0 ? u[1] : -u[1], u[2] > 0.0 ? u[2] : -u[2]);
+}
 
 /* Vector2 */
 struct Vector2
@@ -448,7 +451,10 @@ inline bool operator<=(const Vector2& u, const Vector2& v)
 {
 	return (u.x <= v.x) && (u.y <= v.y);
 }
-
+inline Vector2 Abs(const Vector2& u)
+{
+	return Vector2(u[0] > 0.0 ? u[0] : -u[0], u[1] > 0.0 ? u[1] : -u[1]);
+}
 
 /* Matrix3 */
 struct Matrix3

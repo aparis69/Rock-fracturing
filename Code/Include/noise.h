@@ -53,6 +53,11 @@ public:
 		return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 	}
 
+	static inline float GetValueNormalized(const Vector2& p)
+	{
+		return GetValue(p) * 0.5f + 0.5f;
+	}
+
 	static inline float GetValue(const Vector2& p)
 	{
 		return GetValue(p.ToVector3(0.0f));
@@ -106,6 +111,20 @@ public:
 		for (int i = 0; i < o; i++)
 		{
 			ret += (GetValue(p * freq) * 0.5f + 0.5f) * amp;
+			amp *= 0.5f;
+			freq *= 2.0f;
+		}
+		return ret;
+	}
+
+	static inline float fBmNormalized(const Vector2& p, float a, float f, int o)
+	{
+		float ret = 0.0f;
+		float freq = f;
+		float amp = a;
+		for (int i = 0; i < o; i++)
+		{
+			ret += (GetValueNormalized(p * freq) * 0.5f + 0.5f) * amp;
 			amp *= 0.5f;
 			freq *= 2.0f;
 		}
