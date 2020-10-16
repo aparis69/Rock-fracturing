@@ -21,7 +21,7 @@ public:
 	\param a min
 	\param b max
 	*/
-	static inline float Uniform(float a, float b)
+	static inline double Uniform(double a, double b)
 	{
 		return a + (b - a) * Uniform();
 	}
@@ -29,9 +29,9 @@ public:
 	/*!
 	\brief Compute a uniform random number in [0, 1]
 	*/
-	static inline float Uniform()
+	static inline double Uniform()
 	{
-		return float(rand()) / RAND_MAX;
+		return double(rand()) / RAND_MAX;
 	}
 
 	/*!
@@ -53,7 +53,7 @@ public:
 
 	Ray();
 	Ray(const Vector3& oo, const Vector3& dd);
-	Vector3 operator()(float t) const;
+	Vector3 operator()(double t) const;
 };
 
 inline Ray::Ray()
@@ -67,7 +67,7 @@ inline Ray::Ray(const Vector3& oo, const Vector3& dd)
 	d = dd;
 }
 
-inline Vector3 Ray::operator()(float t) const
+inline Vector3 Ray::operator()(double t) const
 {
 	return o + t * d;
 }
@@ -79,7 +79,7 @@ class Plane
 protected:
 	Vector3 p;
 	Vector3 n;
-	float c;
+	double c;
 
 public:
 	Plane();
@@ -88,7 +88,7 @@ public:
 	Vector3 Normal() const;
 	Vector3 Point() const;
 	int Side(const Vector3& p) const;
-	float Signed(const Vector3& p) const;
+	double Signed(const Vector3& p) const;
 	static bool Intersection(const Plane& a, const Plane& b, const Plane& c, Vector3& p);
 	static std::vector<Vector3> ConvexPoints(const std::vector<Plane>& planes);
 };
@@ -100,7 +100,7 @@ inline Plane::Plane()
 {
 	p = Vector3(0);
 	n = Vector3(0);
-	c = 0.0f;
+	c = 0.0;
 }
 
 /*!
@@ -125,7 +125,7 @@ inline Vector3 Plane::Normal() const
 \brief Computes the signed distance to the plane.
 \param p point
 */
-inline float Plane::Signed(const Vector3& pp) const
+inline double Plane::Signed(const Vector3& pp) const
 {
 	return Dot(n, pp) - c;
 }
@@ -146,13 +146,12 @@ is 10<SUP>-6</SUP>.
 */
 inline int Plane::Side(const Vector3& pp) const
 {
-	float c = Dot(p, n);
-	float r = Dot(n, pp) - c;
+	double r = Dot(n, pp) - c;
 
 	// Epsilon test
-	if (r > 1e-6f)
+	if (r > 1e-6)
 		return 1;
-	else if (r < -1e-6f)
+	else if (r < -1e-6)
 		return -1;
 	else
 		return 0;
@@ -163,10 +162,12 @@ inline int Plane::Side(const Vector3& pp) const
 */
 inline bool Plane::Intersection(const Plane& a, const Plane& b, const Plane& c, Vector3& p)
 {
-	float e = Matrix4(Matrix3(a.Normal(), b.Normal(), c.Normal())).Determinant();
-	if (e < 1e-06f)
+	double e = Matrix4(Matrix3(a.Normal(), b.Normal(), c.Normal())).Determinant();
+	if (e < 1e-06)
 		return false;
-	p = (Dot(a.Point(), a.Normal()) * Cross(b.Normal(), c.Normal())) + (Dot(b.Point(), b.Normal()) * Cross(c.Normal(), a.Normal())) + (Dot(c.Point(), c.Normal()) * Cross(a.Normal(), b.Normal()));
+	p = (Dot(a.Point(), a.Normal()) * (Cross(b.Normal(), c.Normal()))) +
+		(Dot(b.Point(), b.Normal()) * (Cross(c.Normal(), a.Normal()))) +
+		(Dot(c.Point(), c.Normal()) * (Cross(a.Normal(), b.Normal())));
 	p = p / (-e);
 	return true;
 }
@@ -266,17 +267,20 @@ protected:
 	Vector3 b;
 
 public:
+	inline Box() { }
 	explicit Box(const Vector3& A, const Vector3& B);
-	explicit Box(const Vector3& C, float R);
+	explicit Box(const Vector3& C, double R);
 	explicit Box(const Box& b1, const Box& b2);
+	explicit Box(const std::vector<Vector3>& pts);
 
 	bool Contains(const Vector3&) const;
 	Box Extended(const Vector3&) const;
-	float Distance(const Vector3& p) const;
+	Vector3 Center() const;
+	double Distance(const Vector3& p) const;
 	Vector3 Diagonal() const;
 	Vector3 Size() const;
 	Vector3 RandomInside() const;
-	void SetParallelepipedic(float size, int& x, int& y, int& z);
+	void SetParallelepipedic(double size, int& x, int& y, int& z);
 	void SetParallelepipedic(int n, int& x, int& y, int& z);
 	Vector3 Vertex(int) const;
 	Vector3 BottomLeft() const;
@@ -299,7 +303,7 @@ inline Box::Box(const Vector3& A, const Vector3& B) : a(A), b(B)
 \param C box center
 \param R radius
 */
-inline Box::Box(const Vector3& C, float R)
+inline Box::Box(const Vector3& C, double R)
 {
 	Vector3 RR = Vector3(R);
 	a = C - RR;
@@ -315,6 +319,30 @@ inline Box::Box(const Box& b1, const Box& b2)
 {
 	a = Vector3::Min(b1.a, b2.a);
 	b = Vector3::Max(b1.b, b2.b);
+}
+
+/*!
+\brief Constructor from a point set.
+\param pts set of point
+*/
+inline Box::Box(const std::vector<Vector3>& pts)
+{
+	for (int j = 0; j < 3; j++)
+	{
+		a[j] = pts.at(0)[j];
+		b[j] = pts.at(0)[j];
+		for (int i = 1; i < pts.size(); i++)
+		{
+			if (pts.at(i)[j] < a[j])
+			{
+				a[j] = pts.at(i)[j];
+			}
+			if (pts.at(i)[j] > b[j])
+			{
+				b[j] = pts.at(i)[j];
+			}
+		}
+	}
 }
 
 /*
@@ -333,6 +361,14 @@ inline bool Box::Contains(const Vector3& p) const
 inline Box Box::Extended(const Vector3& r) const
 {
 	return Box(a - r, b + r);
+}
+
+/*!
+\brief Computes and returns the center of the box.
+*/
+inline Vector3 Box::Center() const
+{
+	return (a + b) / 2.0f;
 }
 
 /*!
@@ -357,7 +393,7 @@ multiples of a given input reference size.
 \param size Reference size, the dimension of the box will be a multiple of this size.
 \param x, y ,z Three integers initialized in this function.
 */
-inline void Box::SetParallelepipedic(float size, int& x, int& y, int& z)
+inline void Box::SetParallelepipedic(double size, int& x, int& y, int& z)
 {
 	// Diagonal
 	Vector3 d = (b - a);
@@ -376,7 +412,7 @@ inline void Box::SetParallelepipedic(float size, int& x, int& y, int& z)
 	Vector3 c = (a + b) * 0.5f;
 
 	// Diagonal
-	Vector3 e = Vector3(float(x), float(y), float(z)) * size / 2.0f;
+	Vector3 e = Vector3(double(x), double(y), double(z)) * size / 2.0f;
 	a = c - e;
 	b = c + e;
 }
@@ -389,8 +425,8 @@ inline void Box::SetParallelepipedic(float size, int& x, int& y, int& z)
 inline void Box::SetParallelepipedic(int n, int& x, int& y, int& z)
 {
 	Vector3 d = (b - a); // Diagonal
-	float e = d.Max(); // Maximum side length
-	float size = e / n;
+	double e = d.Max(); // Maximum side length
+	double size = e / n;
 	SetParallelepipedic(size, x, y, z);
 }
 
@@ -398,19 +434,19 @@ inline void Box::SetParallelepipedic(int n, int& x, int& y, int& z)
 \brief Compute the distance between a point and the box.
 \param p point
 */
-inline float Box::Distance(const Vector3& p) const
+inline double Box::Distance(const Vector3& p) const
 {
-	float r = 0.0;
+	double r = 0.0;
 	for (int i = 0; i < 3; i++)
 	{
 		if (p[i] < a[i])
 		{
-			float s = p[i] - a[i];
+			double s = p[i] - a[i];
 			r += s * s;
 		}
 		else if (p[i] > b[i])
 		{
-			float s = p[i] - b[i];
+			double s = p[i] - b[i];
 			r += s * s;
 		}
 	}
@@ -429,9 +465,9 @@ we avoid this.
 inline Vector3 Box::RandomInside() const
 {
 	Vector3 s = b - a;
-	float randw = Random::Uniform(-1.0f * s[0] / 2.0f, s[0] / 2.0f);
-	float randh = Random::Uniform(-1.0f * s[1] / 2.0f, s[1] / 2.0f);
-	float randl = Random::Uniform(-1.0f * s[2] / 2.0f, s[2] / 2.0f);
+	double randw = Random::Uniform(-1.0f * s[0] / 2.0f, s[0] / 2.0f);
+	double randh = Random::Uniform(-1.0f * s[1] / 2.0f, s[1] / 2.0f);
+	double randl = Random::Uniform(-1.0f * s[2] / 2.0f, s[2] / 2.0f);
 	return (a + b) / 2.0f + Vector3(randw, randh, randl);
 }
 
@@ -492,18 +528,18 @@ protected:
 public:
 	explicit Box2D();
 	explicit Box2D(const Vector2& A, const Vector2& B);
-	explicit Box2D(const Vector2& C, float R);
+	explicit Box2D(const Vector2& C, double R);
 	explicit Box2D(const Box& b);
 
 	bool Contains(const Vector2&) const;
 	bool Intersect(const Box2D& box) const;
-	float Distance(const Vector2& p) const;
+	double Distance(const Vector2& p) const;
 
 	Vector2 Vertex(int i) const;
 	Vector2 Center() const;
 	Vector2 BottomLeft() const;
 	Vector2 TopRight() const;
-	Box ToBox(float zMin, float zMax) const;
+	Box ToBox(double zMin, double zMax) const;
 	Vector2& operator[](int i);
 	Vector2 operator[](int i) const;
 };
@@ -531,7 +567,7 @@ inline Box2D::Box2D(const Vector2& A, const Vector2& B) : a(A), b(B)
 \param C box center
 \param R radius
 */
-inline Box2D::Box2D(const Vector2& C, float R)
+inline Box2D::Box2D(const Vector2& C, double R)
 {
 	Vector2 RR = Vector2(R);
 	a = C - RR;
@@ -573,19 +609,19 @@ inline bool Box2D::Intersect(const Box2D& box) const
 \brief Compute the distance between a point and the box.
 \param p point
 */
-inline float Box2D::Distance(const Vector2 & p) const
+inline double Box2D::Distance(const Vector2 & p) const
 {
-	float r = 0.0;
+	double r = 0.0;
 	for (int i = 0; i < 2; i++)
 	{
 		if (p[i] < a[i])
 		{
-			float s = p[i] - a[i];
+			double s = p[i] - a[i];
 			r += s * s;
 		}
 		else if (p[i] > b[i])
 		{
-			float s = p[i] - b[i];
+			double s = p[i] - b[i];
 			r += s * s;
 		}
 	}
@@ -631,7 +667,7 @@ inline Vector2 Box2D::TopRight() const
 \param yMin altitude of the first vertex for the new Box
 \param yMax altitude of the second vertex for the new Box
 */
-inline Box Box2D::ToBox(float yMin, float yMax) const
+inline Box Box2D::ToBox(double yMin, double yMax) const
 {
 	return Box(a.ToVector3(yMin), b.ToVector3(yMax));
 }
@@ -662,14 +698,14 @@ class Circle2
 {
 protected:
 	Vector2 center;
-	float radius;
+	double radius;
 
 public:
-	Circle2(const Vector2& c, float r);
+	Circle2(const Vector2& c, double r);
 
 	Vector2 RandomOn() const;
 	Vector2 Center() const;
-	float Radius() const;
+	double Radius() const;
 	bool Contains(const Vector2& p) const;
 };
 
@@ -678,7 +714,7 @@ public:
 \param c center
 \param r radius
 */
-inline Circle2::Circle2(const Vector2& c, float r)
+inline Circle2::Circle2(const Vector2& c, double r)
 {
 	center = c;
 	radius = r;
@@ -689,12 +725,12 @@ inline Circle2::Circle2(const Vector2& c, float r)
 */
 inline Vector2 Circle2::RandomOn() const
 {
-	float u = Random::Uniform(-radius, radius);
-	float v = Random::Uniform(-radius, radius);
-	float s = u * u + v * v;
+	double u = Random::Uniform(-radius, radius);
+	double v = Random::Uniform(-radius, radius);
+	double s = u * u + v * v;
 
-	float rx = (u * u - v * v) / s;
-	float ry = 2.0f * u * v / s;
+	double rx = (u * u - v * v) / s;
+	double ry = 2.0f * u * v / s;
 	return center + Vector2(rx, ry) * radius;
 }
 
@@ -709,7 +745,7 @@ inline Vector2 Circle2::Center() const
 /*!
 \brief Returns the circle radius.
 */
-inline float Circle2::Radius() const
+inline double Circle2::Radius() const
 {
 	return radius;
 }
@@ -729,21 +765,21 @@ class Circle
 protected:
 	Vector3 center;
 	Vector3 normal;
-	float radius;
+	double radius;
 
 public:
-	Circle(const Vector3& c, const Vector3& n, float r);
+	Circle(const Vector3& c, const Vector3& n, double r);
 
 	Vector3 Center() const;
 	Vector3 Normal() const;
-	float Radius() const;
-	bool Intersect(const Ray& r, float& t) const;
+	double Radius() const;
+	bool Intersect(const Ray& r, double& t) const;
 };
 
 /*
 \brief
 */
-inline Circle::Circle(const Vector3& c, const Vector3& n, float r)
+inline Circle::Circle(const Vector3& c, const Vector3& n, double r)
 {
 	center = c;
 	normal = n;
@@ -769,7 +805,7 @@ inline Vector3 Circle::Normal() const
 /*
 \brief
 */
-inline float Circle::Radius() const
+inline double Circle::Radius() const
 {
 	return radius;
 }
@@ -779,9 +815,9 @@ inline float Circle::Radius() const
 \param ray The ray.
 \param t Intersection depth.
 */
-inline bool Circle::Intersect(const Ray& ray, float& t) const
+inline bool Circle::Intersect(const Ray& ray, double& t) const
 {
-	float e = Dot(normal, ray.d);
+	double e = Dot(normal, ray.d);
 	if (fabs(e) < 1e-6f)
 		return false;
 	t = Dot(center - ray.o, normal) / e;
@@ -799,17 +835,17 @@ class Sphere
 {
 protected:
 	Vector3 center;
-	float radius;
+	double radius;
 
 public:
-	Sphere(const Vector3& c, float r);
+	Sphere(const Vector3& c, double r);
 
-	float Distance(const Vector3& p) const;
+	double Distance(const Vector3& p) const;
 	bool Contains(const Vector3& p) const;
 	Vector3 RandomInside() const;
 	Vector3 RandomSurface() const;
 	Vector3 Center() const;
-	float Radius() const;
+	double Radius() const;
 };
 
 /*!
@@ -817,7 +853,7 @@ public:
 \param c center
 \param r radius
 */
-inline Sphere::Sphere(const Vector3& c, float r) : center(c), radius(r)
+inline Sphere::Sphere(const Vector3& c, double r) : center(c), radius(r)
 {
 
 }
@@ -827,10 +863,16 @@ inline Sphere::Sphere(const Vector3& c, float r) : center(c), radius(r)
 If the point lies inside the sphere, the distance is considered to be 0.
 \param p world point
 */
-inline float Sphere::Distance(const Vector3& p) const
+inline double Sphere::Distance(const Vector3& p) const
 {
-	float d = Magnitude(p - center);
-	return d < radius ? 0 : d;
+	double a = Dot((p - center), (p - center));
+	if (a < radius * radius)
+	{
+		return 0.0;
+	}
+	a = sqrt(a) - radius;
+	a *= a;
+	return a;
 }
 
 /*!
@@ -869,7 +911,7 @@ inline Vector3 Sphere::Center() const
 /*!
 \brief Returns the sphere radius.
 */
-inline float Sphere::Radius() const
+inline double Sphere::Radius() const
 {
 	return radius;
 }
@@ -881,7 +923,7 @@ class ScalarField2D
 protected:
 	Box2D box;
 	int nx, ny;
-	std::vector<float> values;
+	std::vector<double> values;
 
 public:
 	/*
@@ -910,7 +952,7 @@ public:
 	\param bbox bounding box of the domain
 	\param value default value of the field
 	*/
-	inline ScalarField2D(int nx, int ny, const Box2D& bbox, float value) : box(bbox), nx(nx), ny(ny)
+	inline ScalarField2D(int nx, int ny, const Box2D& bbox, double value) : box(bbox), nx(nx), ny(ny)
 	{
 		values.resize(nx * ny);
 		Fill(value);
@@ -923,7 +965,7 @@ public:
 	\param bbox bounding box of the domain
 	\param value all values for the field
 	*/
-	inline ScalarField2D(int nx, int ny, const Box2D& bbox, const std::vector<float>& vals) : ScalarField2D(nx, ny, bbox)
+	inline ScalarField2D(int nx, int ny, const Box2D& bbox, const std::vector<double>& vals) : ScalarField2D(nx, ny, bbox)
 	{
 		for (int i = 0; i < vals.size(); i++)
 			values[i] = vals[i];
@@ -952,8 +994,8 @@ public:
 	inline Vector2 Gradient(int i, int j) const
 	{
 		Vector2 ret;
-		float cellSizeX = (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
-		float cellSizeY = (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
+		double cellSizeX = (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
+		double cellSizeY = (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
 
 		// X Gradient
 		if (i == 0)
@@ -979,8 +1021,8 @@ public:
 	*/
 	inline void NormalizeField()
 	{
-		float min = Min();
-		float max = Max();
+		double min = Min();
+		double max = Max();
 		for (int i = 0; i < ny * nx; i++)
 			values[i] = (values[i] - min) / (max - min);
 	}
@@ -991,8 +1033,8 @@ public:
 	inline ScalarField2D Normalized() const
 	{
 		ScalarField2D ret(*this);
-		float min = Min();
-		float max = Max();
+		double min = Min();
+		double max = Max();
 		for (int i = 0; i < ny * nx; i++)
 			ret.values[i] = (ret.values[i] - min) / (max - min);
 		return ret;
@@ -1014,9 +1056,9 @@ public:
 	*/
 	inline Vector3 Vertex(int i, int j) const
 	{
-		float x = box.Vertex(0).x + i * (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
-		float y = Get(i, j);
-		float z = box.Vertex(0).y + j * (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
+		double x = box.Vertex(0).x + i * (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
+		double y = Get(i, j);
+		double z = box.Vertex(0).y + j * (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
 		return Vector3(z, y, x);
 	}
 
@@ -1025,9 +1067,9 @@ public:
 	*/
 	inline Vector3 Vertex(const Vector2i& v) const
 	{
-		float x = box.Vertex(0).x + v.x * (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
-		float y = Get(v.x, v.y);
-		float z = box.Vertex(0).y + v.y * (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
+		double x = box.Vertex(0).x + v.x * (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
+		double y = Get(v.x, v.y);
+		double z = box.Vertex(0).y + v.y * (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
 		return Vector3(z, y, x);
 	}
 
@@ -1048,8 +1090,8 @@ public:
 		Vector2 q = p - box.Vertex(0);
 		Vector2 d = box.Vertex(1) - box.Vertex(0);
 
-		float u = q[0] / d[0];
-		float v = q[1] / d[1];
+		double u = q[0] / d[0];
+		double v = q[1] / d[1];
 
 		int j = int(u * (nx - 1));
 		int i = int(v * (ny - 1));
@@ -1085,8 +1127,8 @@ public:
 		Vector2 q = p - box.Vertex(0);
 		Vector2 d = box.Vertex(1) - box.Vertex(0);
 
-		float u = q[0] / d[0];
-		float v = q[1] / d[1];
+		double u = q[0] / d[0];
+		double v = q[1] / d[1];
 
 		int j = int(u * (nx - 1));
 		int i = int(v * (ny - 1));
@@ -1130,7 +1172,7 @@ public:
 	/*!
 	\brief Returns the value of the field at a given coordinate.
 	*/
-	inline float Get(int row, int column) const
+	inline double Get(int row, int column) const
 	{
 		int index = ToIndex1D(row, column);
 		return values[index];
@@ -1139,7 +1181,7 @@ public:
 	/*!
 	\brief Returns the value of the field at a given coordinate.
 	*/
-	inline float Get(int index) const
+	inline double Get(int index) const
 	{
 		return values[index];
 	}
@@ -1147,7 +1189,7 @@ public:
 	/*!
 	\brief Returns the value of the field at a given coordinate.
 	*/
-	inline float Get(const Vector2i& v) const
+	inline double Get(const Vector2i& v) const
 	{
 		int index = ToIndex1D(v);
 		return values[index];
@@ -1156,7 +1198,7 @@ public:
 	/*!
 	\brief Todo
 	*/
-	void Add(int i, int j, float v)
+	void Add(int i, int j, double v)
 	{
 		values[ToIndex1D(i, j)] += v;
 	}
@@ -1164,7 +1206,7 @@ public:
 	/*!
 	\brief Todo
 	*/
-	void Remove(int i, int j, float v)
+	void Remove(int i, int j, double v)
 	{
 		values[ToIndex1D(i, j)] -= v;
 	}
@@ -1191,16 +1233,16 @@ public:
 	\brief Compute the bilinear interpolation at a given world point.
 	\param p world point.
 	*/
-	inline float GetValueBilinear(const Vector2& p) const
+	inline double GetValueBilinear(const Vector2& p) const
 	{
 		Vector2 q = p - box.Vertex(0);
 		Vector2 d = box.Vertex(1) - box.Vertex(0);
 
-		float texelX = 1.0f / float(nx - 1);
-		float texelY = 1.0f / float(ny - 1);
+		double texelX = 1.0f / double(nx - 1);
+		double texelY = 1.0f / double(ny - 1);
 
-		float u = q[0] / d[0];
-		float v = q[1] / d[1];
+		double u = q[0] / d[0];
+		double v = q[1] / d[1];
 
 		int i = int(v * (ny - 1));
 		int j = int(u * (nx - 1));
@@ -1208,16 +1250,16 @@ public:
 		if (!Inside(i, j) || !Inside(i + 1, j + 1))
 			return -1.0f;
 
-		float anchorU = j * texelX;
-		float anchorV = i * texelY;
+		double anchorU = j * texelX;
+		double anchorV = i * texelY;
 
-		float localU = (u - anchorU) / texelX;
-		float localV = (v - anchorV) / texelY;
+		double localU = (u - anchorU) / texelX;
+		double localV = (v - anchorV) / texelY;
 
-		float v1 = Get(i, j);
-		float v2 = Get(i + 1, j);
-		float v3 = Get(i + 1, j + 1);
-		float v4 = Get(i, j + 1);
+		double v1 = Get(i, j);
+		double v2 = Get(i + 1, j);
+		double v3 = Get(i + 1, j + 1);
+		double v4 = Get(i, j + 1);
 
 		return (1 - localU) * (1 - localV) * v1
 			+ (1 - localU) * localV * v2
@@ -1228,7 +1270,7 @@ public:
 	/*!
 	\brief Fill all the field with a given value.
 	*/
-	inline void Fill(float v)
+	inline void Fill(double v)
 	{
 		std::fill(values.begin(), values.end(), v);
 	}
@@ -1236,7 +1278,7 @@ public:
 	/*!
 	\brief Set a given value at a given coordinate.
 	*/
-	inline void Set(int row, int column, float v)
+	inline void Set(int row, int column, double v)
 	{
 		values[ToIndex1D(row, column)] = v;
 	}
@@ -1244,7 +1286,7 @@ public:
 	/*!
 	\brief Set a given value at a given coordinate.
 	*/
-	inline void Set(const Vector2i& coord, float v)
+	inline void Set(const Vector2i& coord, double v)
 	{
 		values[ToIndex1D(coord)] = v;
 	}
@@ -1252,7 +1294,7 @@ public:
 	/*!
 	\brief Set a given value at a given coordinate.
 	*/
-	inline void Set(int index, float v)
+	inline void Set(int index, double v)
 	{
 		values[index] = v;
 	}
@@ -1260,7 +1302,7 @@ public:
 	/*!
 	\brief Todo
 	*/
-	inline void ThresholdInferior(float t, float v)
+	inline void ThresholdInferior(double t, double v)
 	{
 		for (int i = 0; i < values.size(); i++)
 		{
@@ -1272,11 +1314,11 @@ public:
 	/*!
 	\brief Compute the maximum of the field.
 	*/
-	inline float Max() const
+	inline double Max() const
 	{
 		if (values.size() == 0)
 			return 0.0f;
-		float max = values[0];
+		double max = values[0];
 		for (int i = 1; i < values.size(); i++)
 		{
 			if (values[i] > max)
@@ -1288,11 +1330,11 @@ public:
 	/*!
 	\brief Compute the minimum of the field.
 	*/
-	inline float Min() const
+	inline double Min() const
 	{
 		if (values.size() == 0)
 			return 0.0f;
-		float min = values[0];
+		double min = values[0];
 		for (int i = 1; i < values.size(); i++)
 		{
 			if (values[i] < min)
@@ -1304,9 +1346,9 @@ public:
 	/*!
 	\brief Compute the average value of the scalarfield.
 	*/
-	inline float Average() const
+	inline double Average() const
 	{
-		float sum = 0.0f;
+		double sum = 0.0f;
 		for (int i = 0; i < values.size(); i++)
 			sum += values[i];
 		return sum / values.size();
@@ -1365,6 +1407,6 @@ public:
 	*/
 	inline int Memory() const
 	{
-		return sizeof(ScalarField2D) + sizeof(float) * int(values.size());
+		return sizeof(ScalarField2D) + sizeof(double) * int(values.size());
 	}
 };

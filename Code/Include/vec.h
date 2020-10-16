@@ -15,7 +15,7 @@ namespace Math
 	/*!
 	\brief
 	*/
-	inline float Clamp(float x, float a = 0.0f, float b = 1.0f)
+	inline double Clamp(double x, double a = 0.0f, double b = 1.0f)
 	{
 		return x < a ? a : x > b ? b : x;
 	}
@@ -26,7 +26,7 @@ namespace Math
 	\param a, b Interval values.
 	\return Real in unit inverval.
 	*/
-	inline float Step(float x, float a, float b)
+	inline double Step(double x, double a, double b)
 	{
 		if (x < a)
 		{
@@ -55,28 +55,28 @@ namespace Math
 	}
 
 	template<typename T>
-	inline T Lerp(T a, T b, float t)
+	inline T Lerp(T a, T b, double t)
 	{
 		return (a * (1.0f - t)) + (b * t);
 	}
 
-	inline float Abs(float a)
+	inline double Abs(double a)
 	{
 		return a < 0 ? -a : a;
 	}
 
-	inline float CubicSmoothCompact(float x, float r)
+	inline double CubicSmoothCompact(double x, double r)
 	{
-		return (x > r) ? 0.0f : (1.0f - x / r)*(1.0f - x / r)*(1.0f - x / r);
+		return (x > r) ? 0.0f : (1.0f - x / r) * (1.0f - x / r) * (1.0f - x / r);
 	}
 
-	inline float CubicSigmoid(float x, float r, float t)
+	inline double CubicSigmoid(double x, double r, double t)
 	{
 		if (x > 0.0f)
 		{
 			if (x < r)
 			{
-				return x * (1.0f + x * ((3.0f*t - 2.0f*r) / (r*r) + x * (r - 2.0f*t) / (r*r*r)));
+				return x * (1.0f + x * ((3.0f * t - 2.0f * r) / (r * r) + x * (r - 2.0f * t) / (r * r * r)));
 			}
 			else
 			{
@@ -88,8 +88,8 @@ namespace Math
 			if (x > -r)
 			{
 				// Use symmetric
-				float y = -x;
-				return  -(y * (1.0f + y * ((3.0f*t - 2.0f*r) / (r*r) + y * (r - 2.0f*t) / (r*r*r))));
+				double y = -x;
+				return  -(y * (1.0f + y * ((3.0f * t - 2.0f * r) / (r * r) + y * (r - 2.0f * t) / (r * r * r))));
 			}
 			else
 			{
@@ -98,17 +98,17 @@ namespace Math
 		}
 	}
 
-	inline float CubicSmooth(float x)
+	inline double CubicSmooth(double x)
 	{
 		return x * x * (3.0f - 2.0f * x);
 	}
 
-	inline float CubicSmooth(float x, float r)
+	inline double CubicSmooth(double x, double r)
 	{
 		return (1.0f - x / r) * (1.0f - x / r) * (1.0f - x / r);
 	}
 
-	inline float CubicSmoothStep(float x, float a, float b)
+	inline double CubicSmoothStep(double x, double a, double b)
 	{
 		if (x < a)
 			return 0.0f;
@@ -118,7 +118,7 @@ namespace Math
 			return 1.0f - CubicSmooth((x - a) * (x - a), (b - a) * (b - a));
 	}
 
-	inline float QuinticSmooth(float t)
+	inline double QuinticSmooth(double t)
 	{
 		return pow(t, 3.0f) * (t * (t * 6.0f - 15.0f) + 10.0f);
 	}
@@ -150,11 +150,11 @@ public:
 struct Vector3
 {
 public:
-	float x, y, z;
+	double x, y, z;
 
 	explicit Vector3() : x(0.0f), y(0.0f), z(0.0f) { }
-	explicit Vector3(float n) : x(n), y(n), z(n) {}
-	explicit Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
+	explicit Vector3(double n) : x(n), y(n), z(n) {}
+	explicit Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
 
 	friend bool operator> (const Vector3&, const Vector3&);
 	friend bool operator< (const Vector3&, const Vector3&);
@@ -172,11 +172,11 @@ public:
 	{
 		return Vector3(x - v.x, y - v.y, z - v.z);
 	}
-	Vector3 operator*= (float f)
+	Vector3 operator*= (double f)
 	{
 		return Vector3(x * f, y * f, z * f);
 	}
-	Vector3 operator/= (float f)
+	Vector3 operator/= (double f)
 	{
 		return Vector3(x / f, y / f, z / f);
 	}
@@ -184,11 +184,11 @@ public:
 	{
 		return Vector3(x * u.x, y * u.y, z * u.z);
 	}
-	Vector3 operator*(float k) const
+	Vector3 operator*(double k) const
 	{
 		return Vector3(x * k, y * k, z * k);
 	}
-	Vector3 operator/(float k) const
+	Vector3 operator/(double k) const
 	{
 		return Vector3(x / k, y / k, z / k);
 	}
@@ -208,11 +208,11 @@ public:
 	{
 		return Vector3(x + u.x, y + u.y, z + u.z);
 	}
-	Vector3 operator+(float k) const
+	Vector3 operator+(double k) const
 	{
 		return Vector3(x + k, y + k, z + k);
 	}
-	float operator[](int i) const
+	double operator[](int i) const
 	{
 		if (i == 0)
 			return x;
@@ -220,7 +220,7 @@ public:
 			return y;
 		return z;
 	}
-	float& operator[](int i)
+	double& operator[](int i)
 	{
 		if (i == 0)
 			return x;
@@ -229,11 +229,11 @@ public:
 		return z;
 	}
 	friend std::ostream& operator<<(std::ostream& stream, const Vector3& u);
-	inline float Max() const
+	inline double Max() const
 	{
 		return Math::Max(Math::Max(x, y), z);
 	}
-	inline float Min() const
+	inline double Min() const
 	{
 		return Math::Min(Math::Min(x, y), z);
 	}
@@ -272,21 +272,21 @@ inline Vector3 Cross(const Vector3& u, const Vector3& v)
 {
 	return Vector3((u.y * v.z) - (u.z * v.y), (u.z * v.x) - (u.x * v.z), (u.x * v.y) - (u.y * v.x));
 }
-inline float Dot(const Vector3& u, const Vector3& v)
+inline double Dot(const Vector3& u, const Vector3& v)
 {
 	return u.x * v.x + u.y * v.y + u.z * v.z;
 }
-inline float Magnitude(const Vector3& u)
+inline double Magnitude(const Vector3& u)
 {
 	return sqrt(u.x * u.x + u.y * u.y + u.z * u.z);
 }
-inline float SquaredMagnitude(const Vector3& u)
+inline double SquaredMagnitude(const Vector3& u)
 {
 	return u.x * u.x + u.y * u.y + u.z * u.z;
 }
 inline Vector3 Normalize(const Vector3& v)
 {
-	float kk = 1.0f / Magnitude(v);
+	double kk = 1.0f / Magnitude(v);
 	return v * kk;
 }
 inline Vector3 operator-(const Vector3& v)
@@ -309,7 +309,7 @@ inline bool operator<=(const Vector3& u, const Vector3& v)
 {
 	return (u.x <= v.x) && (u.y <= v.y) && (u.z <= v.z);
 }
-inline Vector3 operator*(float a, const Vector3& v)
+inline Vector3 operator*(double a, const Vector3& v)
 {
 	return v * a;
 }
@@ -322,32 +322,32 @@ inline Vector3 Abs(const Vector3& u)
 struct Vector2
 {
 public:
-	float x, y;
+	double x, y;
 
 	explicit Vector2() : x(0.0f), y(0.0f) { }
-	explicit Vector2(const Vector2i& v) : x(float(v.x)), y(float(v.y)) { }
-	explicit Vector2(float n) : x(n), y(n) { }
-	explicit Vector2(float x, float y) : x(x), y(y) { }
+	explicit Vector2(const Vector2i& v) : x(double(v.x)), y(double(v.y)) { }
+	explicit Vector2(double n) : x(n), y(n) { }
+	explicit Vector2(double x, double y) : x(x), y(y) { }
 	explicit Vector2(const Vector3& v) : x(v.x), y(v.z) { }
 
 	friend bool operator> (const Vector2&, const Vector2&);
-  	friend bool operator< (const Vector2&, const Vector2&);
-  	friend bool operator>= (const Vector2&, const Vector2&);
-  	friend bool operator<= (const Vector2&, const Vector2&);
-	
+	friend bool operator< (const Vector2&, const Vector2&);
+	friend bool operator>= (const Vector2&, const Vector2&);
+	friend bool operator<= (const Vector2&, const Vector2&);
+
 	Vector2 operator+= (const Vector2& v)
 	{
 		return Vector2(x + v.x, y + v.y);
 	}
-  	Vector2 operator-= (const Vector2& v)
+	Vector2 operator-= (const Vector2& v)
 	{
 		return Vector2(x - v.x, y - v.y);
 	}
-	Vector2 operator*= (float f)
+	Vector2 operator*= (double f)
 	{
 		return Vector2(x * f, y * f);
 	}
-	Vector2 operator/= (float f)
+	Vector2 operator/= (double f)
 	{
 		return Vector2(x / f, y / f);
 	}
@@ -355,11 +355,11 @@ public:
 	{
 		return Vector2(x * v.x, y * v.y);
 	}
-	Vector2 operator*(float k) const
+	Vector2 operator*(double k) const
 	{
 		return Vector2(x * k, y * k);
 	}
-	Vector2 operator/(float k) const
+	Vector2 operator/(double k) const
 	{
 		return Vector2(x / k, y / k);
 	}
@@ -375,36 +375,36 @@ public:
 	{
 		return Vector2(x + u.x, y + u.y);
 	}
-	Vector2 operator+(float k) const
+	Vector2 operator+(double k) const
 	{
 		return Vector2(x + k, y + k);
 	}
-	Vector2 operator-(float k) const
+	Vector2 operator-(double k) const
 	{
 		return Vector2(x - k, y - k);
 	}
-	float operator[](int i) const
+	double operator[](int i) const
 	{
 		if (i == 0)
 			return x;
 		return y;
 	}
-	float& operator[](int i)
+	double& operator[](int i)
 	{
 		if (i == 0)
 			return x;
 		return y;
 	}
 	friend std::ostream& operator<< (std::ostream& stream, const Vector2& u);
-	inline Vector3 ToVector3(float yy) const
+	inline Vector3 ToVector3(double yy) const
 	{
 		return Vector3(x, yy, y);
 	}
-	inline float Max() const
+	inline double Max() const
 	{
 		return Math::Max(x, y);
 	}
-	inline float Min() const
+	inline double Min() const
 	{
 		return Math::Min(x, y);
 	}
@@ -414,21 +414,21 @@ inline std::ostream& operator<<(std::ostream& stream, const Vector2& u)
 	stream << "(" << u.x << ", " << u.y << ");";
 	return stream;
 }
-inline float Dot(const Vector2& u, const Vector2& v)
+inline double Dot(const Vector2& u, const Vector2& v)
 {
 	return u.x * v.x + u.y * v.y;
 }
-inline float Magnitude(const Vector2& u)
+inline double Magnitude(const Vector2& u)
 {
 	return sqrt(u.x * u.x + u.y * u.y);
 }
-inline float SquaredMagnitude(const Vector2& u)
+inline double SquaredMagnitude(const Vector2& u)
 {
 	return u.x * u.x + u.y * u.y;
 }
 inline Vector2 Normalize(const Vector2& v)
 {
-	float kk = 1.0f / Magnitude(v);
+	double kk = 1.0f / Magnitude(v);
 	return v * kk;
 }
 inline Vector2 operator-(const Vector2& v)
@@ -460,14 +460,14 @@ inline Vector2 Abs(const Vector2& u)
 struct Matrix3
 {
 public:
-	float r[9];
+	double r[9];
 
 	Matrix3();
 	Matrix3(const Vector3& a, const Vector3& b, const Vector3& c);
-	Matrix3(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
-	float Determinant() const;
-	float& operator() (int, int);
-	float operator() (int, int) const;
+	Matrix3(double a00, double a01, double a02, double a10, double a11, double a12, double a20, double a21, double a22);
+	double Determinant() const;
+	double& operator() (int, int);
+	double operator() (int, int) const;
 };
 
 inline Matrix3::Matrix3()
@@ -491,7 +491,7 @@ inline Matrix3::Matrix3(const Vector3& a, const Vector3& b, const Vector3& c)
 	r[8] = c[2];
 }
 
-inline Matrix3::Matrix3(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22)
+inline Matrix3::Matrix3(double a00, double a01, double a02, double a10, double a11, double a12, double a20, double a21, double a22)
 {
 	r[0] = a00;
 	r[1] = a01;
@@ -506,17 +506,17 @@ inline Matrix3::Matrix3(float a00, float a01, float a02, float a10, float a11, f
 	r[8] = a22;
 }
 
-inline float Matrix3::Determinant() const
+inline double Matrix3::Determinant() const
 {
 	return r[0] * r[4] * r[8] + r[1] * r[5] * r[6] + r[2] * r[3] * r[7] - r[2] * r[4] * r[6] - r[1] * r[3] * r[8] - r[0] * r[5] * r[7];
 }
 
-inline float& Matrix3::operator() (int i, int j)
+inline double& Matrix3::operator() (int i, int j)
 {
 	return r[i + j + j + j];
 }
 
-inline float Matrix3::operator() (int i, int j) const
+inline double Matrix3::operator() (int i, int j) const
 {
 	return r[i + j + j + j];
 }
@@ -526,13 +526,13 @@ inline float Matrix3::operator() (int i, int j) const
 struct Matrix4
 {
 public:
-	float r[16];
+	double r[16];
 
 	Matrix4();
 	Matrix4(const Matrix3& m3);
-	float& operator() (int, int);
-	float operator() (int, int) const;
-	float Determinant() const;
+	double& operator() (int, int);
+	double operator() (int, int) const;
+	double Determinant() const;
 };
 
 inline Matrix4::Matrix4()
@@ -569,21 +569,21 @@ inline Matrix4::Matrix4(const Matrix3& a)
 	r[15] = 1.0;
 }
 
-inline float& Matrix4::operator() (int i, int j)
+inline double& Matrix4::operator() (int i, int j)
 {
 	return r[i + j + j + j];
 }
 
-inline float Matrix4::operator() (int i, int j) const
+inline double Matrix4::operator() (int i, int j) const
 {
 	return r[i + j + j + j];
 }
 
-inline float Matrix4::Determinant() const
+inline double Matrix4::Determinant() const
 {
 	const Matrix4& M = *this;
 	return M(0, 0) * Matrix3(M(1, 1), M(1, 2), M(1, 3), M(2, 1), M(2, 2), M(2, 3), M(3, 1), M(3, 2), M(3, 3)).Determinant()
-			- M(1, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(2, 1), M(2, 2), M(2, 3), M(3, 1), M(3, 2), M(3, 3)).Determinant()
-			+ M(2, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(1, 1), M(1, 2), M(1, 3), M(3, 1), M(3, 2), M(3, 3)).Determinant()
-			- M(3, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(1, 1), M(1, 2), M(1, 3), M(2, 1), M(2, 2), M(2, 3)).Determinant();
+		- M(1, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(2, 1), M(2, 2), M(2, 3), M(3, 1), M(3, 2), M(3, 3)).Determinant()
+		+ M(2, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(1, 1), M(1, 2), M(1, 3), M(3, 1), M(3, 2), M(3, 3)).Determinant()
+		- M(3, 0) * Matrix3(M(0, 1), M(0, 2), M(0, 3), M(1, 1), M(1, 2), M(1, 3), M(2, 1), M(2, 2), M(2, 3)).Determinant();
 }

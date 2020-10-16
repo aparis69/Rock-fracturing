@@ -59,22 +59,56 @@ public:
 	std::vector<Vector3> pts;
 };
 
-struct BlockSDF
+
+struct SDFNode
+{
+public:
+	Box box;
+
+	SDFNode();
+	SDFNode(const Box& box);
+	Vector3 Gradient(const Vector3& p) const;
+	virtual double Signed(const Vector3& p) const = 0;
+};
+
+struct SDFUnionSphereLOD : public SDFNode
+{
+public:
+	Sphere sphere;
+	double re;
+	SDFNode* e[2];
+
+	SDFUnionSphereLOD(SDFNode*, SDFNode*, double re);
+	double Signed(const Vector3& p) const;
+
+	static SDFNode* OptimizedBVH(std::vector<SDFNode*>& nodes, double re);
+	static SDFNode* OptimizedBVHRecursive(std::vector<SDFNode*>& nodes, int begin, int end, double re);
+};
+
+struct SDFGradientWarp : public SDFNode
+{
+public:
+	SDFNode* e;
+
+	SDFGradientWarp(SDFNode* e);
+	double WarpingStrength(const Vector3& p, const Vector3& n) const;
+	double Signed(const Vector3& p) const;
+};
+
+struct SDFBlock : public SDFNode
 {
 public:
 	std::vector<Plane> planes;
-	float smoothRadius;
+	double smoothRadius;
 
-	BlockSDF(const std::vector<Plane>& pl, float sr);
-	float SmoothingPolynomial(float d1, float d2, float sr) const;
-	float SignedSmoothConvex(const Vector3& p) const;
-	Vector3 Gradient(const Vector3& p) const;
-	float WarpingStrength(const Vector3& p, const Vector3& n) const;
-	float Signed(const Vector3& p) const;
+	SDFBlock(const std::vector<Plane>& pl, double sr);
+	double SmoothingPolynomial(double d1, double d2, double sr) const;
+	double Signed(const Vector3& p) const;
 };
 
-PointSet3 PoissonSamplingBox(const Box& box, float r, int n);
-FractureSet GenerateFractures(FractureType type, const Box& box, float r);
+void LoadImageFileForWarping(const char* str, double a, double b);
+PointSet3 PoissonSamplingBox(const Box& box, double r, int n);
+FractureSet GenerateFractures(FractureType type, const Box& box, double r);
 std::vector<BlockCluster> ComputeBlockClusters(PointSet3& set, const FractureSet& frac);
-std::vector<BlockSDF> ComputeBlockSDF(const std::vector<BlockCluster>& clusters);
-MC::mcMesh PolygonizeSDF(const Box& box, const std::vector<BlockSDF>& clusters);
+SDFNode* ComputeBlockSDF(const std::vector<BlockCluster>& clusters);
+MC::mcMesh PolygonizeSDF(const Box& box, SDFNode* node);

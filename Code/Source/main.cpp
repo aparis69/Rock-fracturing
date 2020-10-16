@@ -4,6 +4,9 @@
 
 	To minimize dependencies, no realtime viewer is provided. To compute the final isosurface, 
 	a public domain marching-cube implementation is used.
+	The main bottleneck of the generation is the isosurface extraction: we multithread the field
+	function computation part but if you want high resolution meshes: it is still quite long.
+	However, note that we did not focus on optimization.
 	
 	If you have any questions or problem to compile the code, you can contact me at:
 	axel(dot)paris(at)liris(dot)cnrs(dot)fr
@@ -61,10 +64,12 @@ to reproduce it.
 */
 int main()
 {
-	srand((unsigned int)(time(NULL)));
+	srand(1234);
+
+	LoadImageFileForWarping("../Textures/rock1.png", 0.0f, 1.0f);
 	
-	ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
-	std::cout << "Equidimensional tile done" << std::endl;
+	/*ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
+	std::cout << "Equidimensional tile done" << std::endl;*/
 
 	ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
 	std::cout << "Rhombohedral tile done" << std::endl;

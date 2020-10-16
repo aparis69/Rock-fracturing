@@ -46,28 +46,28 @@ static int Perm[512] =
 class PerlinNoise
 {
 public:
-	static inline float Gradient(int hash, float x, float y, float z)
+	static inline double Gradient(int hash, double x, double y, double z)
 	{
 		const int h = hash & 15;
-		const float u = h < 8 ? x : y, v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+		const double u = h < 8 ? x : y, v = h < 4 ? y : h == 12 || h == 14 ? x : z;
 		return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 	}
 
-	static inline float GetValueNormalized(const Vector2& p)
+	static inline double GetValueNormalized(const Vector2& p)
 	{
 		return GetValue(p) * 0.5f + 0.5f;
 	}
 
-	static inline float GetValue(const Vector2& p)
+	static inline double GetValue(const Vector2& p)
 	{
 		return GetValue(p.ToVector3(0.0f));
 	}
 
-	static inline float GetValue(const Vector3& p)
+	static inline double GetValue(const Vector3& p)
 	{
-		float x = p.x;
-		float y = p.y;
-		float z = p.z;
+		double x = p.x;
+		double y = p.y;
+		double z = p.z;
 
 		// Unit coordinates in cube
 		const int unit_x = int(floor(x)) & 255;
@@ -80,9 +80,9 @@ public:
 		z = z - floor(z);
 
 		// Compute fading coefficients
-		const float u = Math::QuinticSmooth(x);
-		const float v = Math::QuinticSmooth(y);
-		const float w = Math::QuinticSmooth(z);
+		const double u = Math::QuinticSmooth(x);
+		const double v = Math::QuinticSmooth(y);
+		const double w = Math::QuinticSmooth(z);
 
 		// Hash cube coordinates
 		const int a = Perm[unit_x] + unit_y;
@@ -93,21 +93,21 @@ public:
 		const int bb = Perm[b + 1] + unit_z;
 
 		// Interpolate results
-		const float l1 = Math::Lerp(Gradient(Perm[aa], x, y, z), Gradient(Perm[ba], x - 1, y, z), u);
-		const float l2 = Math::Lerp(Gradient(Perm[ab], x, y - 1, z), Gradient(Perm[bb], x - 1, y - 1, z), u);
-		const float l3 = Math::Lerp(Gradient(Perm[aa + 1], x, y, z - 1), Gradient(Perm[ba + 1], x - 1, y, z - 1), u);
-		const float l4 = Math::Lerp(Gradient(Perm[ab + 1], x, y - 1, z - 1), Gradient(Perm[bb + 1], x - 1, y - 1, z - 1), u);
-		const float l5 = Math::Lerp(l1, l2, v);
-		const float l6 = Math::Lerp(l3, l4, v);
+		const double l1 = Math::Lerp(Gradient(Perm[aa], x, y, z), Gradient(Perm[ba], x - 1, y, z), u);
+		const double l2 = Math::Lerp(Gradient(Perm[ab], x, y - 1, z), Gradient(Perm[bb], x - 1, y - 1, z), u);
+		const double l3 = Math::Lerp(Gradient(Perm[aa + 1], x, y, z - 1), Gradient(Perm[ba + 1], x - 1, y, z - 1), u);
+		const double l4 = Math::Lerp(Gradient(Perm[ab + 1], x, y - 1, z - 1), Gradient(Perm[bb + 1], x - 1, y - 1, z - 1), u);
+		const double l5 = Math::Lerp(l1, l2, v);
+		const double l6 = Math::Lerp(l3, l4, v);
 
 		return Math::Lerp(l5, l6, w);
 	}
 
-	static inline float fBm(const Vector3& p, float a, float f, int o)
+	static inline double fBm(const Vector3& p, double a, double f, int o)
 	{
-		float ret = 0.0f;
-		float freq = f;
-		float amp = a;
+		double ret = 0.0f;
+		double freq = f;
+		double amp = a;
 		for (int i = 0; i < o; i++)
 		{
 			ret += (GetValue(p * freq) * 0.5f + 0.5f) * amp;
@@ -117,11 +117,11 @@ public:
 		return ret;
 	}
 
-	static inline float fBmNormalized(const Vector2& p, float a, float f, int o)
+	static inline double fBmNormalized(const Vector2& p, double a, double f, int o)
 	{
-		float ret = 0.0f;
-		float freq = f;
-		float amp = a;
+		double ret = 0.0f;
+		double freq = f;
+		double amp = a;
 		for (int i = 0; i < o; i++)
 		{
 			ret += (GetValueNormalized(p * freq) * 0.5f + 0.5f) * amp;
