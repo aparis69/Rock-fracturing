@@ -67,9 +67,9 @@ ScalarField2D HeightField::DrainageArea() const
 	typedef struct ScalarValue
 	{
 		int x, y;
-		float value;
-		inline ScalarValue() { }
-		inline ScalarValue(int a, int b, float h) : x(a), y(b), value(h) { }
+		double value;
+		inline ScalarValue() : x(0), y(0), value(0.0) { }
+		inline ScalarValue(int a, int b, double h) : x(a), y(b), value(h) { }
 	} ScalarValue;
 
 	// Sort all point by decreasing height
@@ -81,7 +81,7 @@ ScalarField2D HeightField::DrainageArea() const
 	}
 	std::sort(points.begin(), points.end(), [](ScalarValue p1, ScalarValue p2) { return p1.value > p2.value; });
 
-	std::array<float, 8> slopes;
+	std::array<double, 8> slopes;
 	std::array<Vector2i, 8> coords;
 	ScalarField2D DA = ScalarField2D(nx, ny, box, 1.0);
 	while (!points.empty())
@@ -91,7 +91,7 @@ ScalarField2D HeightField::DrainageArea() const
 
 		slopes.fill(0.0f);
 		int i = p.x, j = p.y;
-		float h = Get(i, j);
+		double h = Get(i, j);
 		int neighbourCount = 0;
 		for (int k = -1; k <= 1; k++)
 		{
@@ -100,10 +100,10 @@ ScalarField2D HeightField::DrainageArea() const
 				if ((k == 0 && l == 0) || Inside(i + k, j + l) == false)
 					continue;
 				// If current point has lower neighbour : compute slope to later distribute accordingly.
-				float nH = Get(i + k, j + l);
+				double nH = Get(i + k, j + l);
 				if (h > nH)
 				{
-					float dH = h - nH;
+					double dH = h - nH;
 					if (k + l == -1 || k + l == 1)
 						slopes[neighbourCount] = dH;
 					else

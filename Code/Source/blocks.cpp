@@ -1,5 +1,6 @@
 #include "blocks.h"
-#include <queue>
+#include <queue>		// for the flood-filling part
+#include <algorithm>	// for std::partition in the boundinng volume hierarchy
 
 // Source: https://github.com/leomccormack/convhull_3d
 #define CONVHULL_3D_ENABLE
@@ -16,7 +17,7 @@
 // Multithread field function computation
 #include <omp.h>
 
-// Warping displacement strength stored as global
+// Gradient Warping strength stored as global
 static ScalarField2D warpingField;
 
 
@@ -182,7 +183,7 @@ double SDFGradientWarp::Signed(const Vector3& p) const
 {
 	// First compute gradient-based warping
 	Vector3 g = e->Gradient(p);
-	float s = 0.65 * WarpingStrength(p, -Normalize(g));
+	double s = 0.65 * WarpingStrength(p, -Normalize(g));	// Hardcoded strength
 
 	// Then compute contribution from the convex block
 	return e->Signed(p + g * s);
@@ -548,7 +549,7 @@ MC::mcMesh PolygonizeSDF(const Box& box, SDFNode* node)
 				for (int k = 0; k < n; k++)
 				{
 					Vector3 p = Vector3(box[0][0] + i * cellDiagonal[0], box[0][1] + j * cellDiagonal[1], box[0][2] + k * cellDiagonal[2]);
-					field[(k * n + j) * n + i] = node->Signed(p);
+					field[(k * n + j) * n + i] = MC::MC_FLOAT(node->Signed(p));
 				}
 			}
 		}
