@@ -68,8 +68,8 @@ int main()
 
 	LoadImageFileForWarping("../Textures/rock1.png", 0.0f, 1.0f);
 	
-	/*ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
-	std::cout << "Equidimensional tile done" << std::endl;*/
+	ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
+	std::cout << "Equidimensional tile done" << std::endl;
 
 	ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
 	std::cout << "Rhombohedral tile done" << std::endl;

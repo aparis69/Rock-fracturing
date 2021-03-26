@@ -104,7 +104,9 @@ inline Plane::Plane()
 }
 
 /*!
-\brief
+\brief Constructor from a point and a normal.
+\param pp point on the plane
+\param plane normal (should be normalized)
 */
 inline Plane::Plane(const Vector3& pp, const Vector3& nn)
 {
@@ -114,7 +116,7 @@ inline Plane::Plane(const Vector3& pp, const Vector3& nn)
 }
 
 /*!
-\brief
+\brief Returns the normal vector of the plane.
 */
 inline Vector3 Plane::Normal() const
 {
@@ -131,7 +133,7 @@ inline double Plane::Signed(const Vector3& pp) const
 }
 
 /*!
-\brief
+\brief Returns a point on the plane.
 */
 inline Vector3 Plane::Point() const
 {
@@ -232,10 +234,17 @@ public:
 	Vector3 Point(int i) const;
 };
 
+/*!
+\brief Default Constructor.
+*/
 inline Triangle::Triangle()
 {
 }
 
+/*!
+\brief Constructor from three points.
+\param a, b, c points.
+*/
 inline Triangle::Triangle(const Vector3& a, const Vector3& b, const Vector3& c)
 {
 	pts[0] = a;
@@ -243,16 +252,26 @@ inline Triangle::Triangle(const Vector3& a, const Vector3& b, const Vector3& c)
 	pts[2] = c;
 }
 
+/*!
+\brief Computes and returns the center of the triangle.
+*/
 inline Vector3 Triangle::Center() const
 {
 	return (pts[0] + pts[1] + pts[2]) / 3.0f;
 }
 
+/*!
+\brief Computes and returns the normal of the triangle.
+*/
 inline Vector3 Triangle::Normal() const
 {
 	return Normalize(Cross(pts[1] - pts[0], pts[2] - pts[0]));
 }
 
+/*!
+\brief Returns one of the point of the triangle.
+\param i point index
+*/
 inline Vector3 Triangle::Point(int i) const
 {
 	return pts[i];
