@@ -65,7 +65,6 @@ endif
 
 OBJECTS := \
 	$(OBJDIR)/blocks.o \
-	$(OBJDIR)/heightfield.o \
 	$(OBJDIR)/main.o \
 
 RESOURCES := \
@@ -128,9 +127,6 @@ $(GCH): $(PCH)
 endif
 
 $(OBJDIR)/blocks.o: ../Code/Source/blocks.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/heightfield.o: ../Code/Source/heightfield.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/main.o: ../Code/Source/main.cpp

@@ -3,7 +3,7 @@
 	Four scenes (in Four different files) can be run to export an .obj file.
 
 	To minimize dependencies, no realtime viewer is provided. To compute the final isosurface, 
-	a public domain marching-cube implementation is used.
+	a modified public domain marching-cube implementation is used.
 	The main bottleneck of the generation is the isosurface extraction: we multithread the field
 	function computation part but if you want high resolution meshes: it is still quite long.
 	However, note that we did not focus on optimization.
@@ -34,7 +34,7 @@ static void ComputeAndExportTile(FractureType t, const char* filename)
 	auto sdf = ComputeBlockSDF(clusters);
 
 	// (4) Mesh extraction
-	MC::mcMesh mesh = PolygonizeSDF(tile.Extended(Vector3(2.0f)), sdf);
+	MC::mcMesh mesh = PolygonizeSDF(sdf->box, sdf);
 
 	// Export in .obj file
 	std::ofstream out;
@@ -68,17 +68,17 @@ int main()
 
 	LoadImageFileForWarping("../Textures/rock1.png", 0.0f, 1.0f);
 	
-	/*ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
-	std::cout << "Equidimensional tile done" << std::endl;*/
+	ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
+	std::cout << "Equidimensional tile done" << std::endl;
 
-	ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
+	/*ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
 	std::cout << "Rhombohedral tile done" << std::endl;
 
 	ComputeAndExportTile(FractureType::Polyhedral,		"tile_polyhedral.obj");
 	std::cout << "Polyhedral tile done" << std::endl;
 
 	ComputeAndExportTile(FractureType::Tabular,			"tile_tabular.obj");
-	std::cout << "Tabular tile done" << std::endl;
+	std::cout << "Tabular tile done" << std::endl;*/
 
 	return 0;
 }

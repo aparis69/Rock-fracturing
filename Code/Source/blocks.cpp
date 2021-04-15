@@ -21,21 +21,23 @@ static ScalarField2D warpingField;
 
 
 /*!
-\brief
+\brief Default constructor for node.
 */
 SDFNode::SDFNode()
 {
 }
 
 /*!
-\brief
+\brief Constructor from a bounding box.
+\param box the bounding box.
 */
 SDFNode::SDFNode(const Box& box) : box(box)
 {
 }
 
 /*!
-\brief
+\brief Computes the gradient numerically at a given point.
+\param p point
 */
 Vector3 SDFNode::Gradient(const Vector3& p) const
 {
@@ -48,16 +50,19 @@ Vector3 SDFNode::Gradient(const Vector3& p) const
 
 
 /*!
-\brief
+\brief Constructor for a binary bounding sphere node.
+\param a, b child nodes
+\param re transition radius
 */
-SDFUnionSphereLOD::SDFUnionSphereLOD(SDFNode* a, SDFNode* b, double re) : SDFNode(Box(a->box, b->box)), re(re), sphere(Sphere(box.Center(), box.Size().Max()))
+SDFUnionSphereLOD::SDFUnionSphereLOD(SDFNode* a, SDFNode* b, double re) : SDFNode(Box(a->box, b->box).Extended(Vector3(re))), re(re), sphere(Sphere(box.Center(), box.Size().Max()))
 {
 	e[0] = a;
 	e[1] = b;
 }
 
 /*!
-\brief
+\brief Evaluates the node.
+\param p point
 */
 double SDFUnionSphereLOD::Signed(const Vector3& p) const
 {
@@ -77,7 +82,9 @@ double SDFUnionSphereLOD::Signed(const Vector3& p) const
 }
 
 /*!
-\brief
+\brief Computes the bounding volume hiearchy using bounding sphere binary nodes.
+\param nodes the nodes to organize
+\param re transition radius
 */
 SDFNode* SDFUnionSphereLOD::OptimizedBVH(std::vector<SDFNode*>& nodes, double re)
 {
@@ -143,7 +150,8 @@ SDFNode* SDFUnionSphereLOD::OptimizedBVHRecursive(std::vector<SDFNode*>& pts, in
 
 
 /*!
-\brief
+\brief Constructor from a node.
+\param e child node
 */
 SDFGradientWarp::SDFGradientWarp(SDFNode* e) : e(e)
 {
@@ -151,7 +159,9 @@ SDFGradientWarp::SDFGradientWarp(SDFNode* e) : e(e)
 }
 
 /*!
-\brief
+\brief Computes the warping strength as a triplanar parameterization of the texture.
+\param p point
+\param n normal
 */
 double SDFGradientWarp::WarpingStrength(const Vector3& p, const Vector3& n) const
 {
@@ -176,7 +186,8 @@ double SDFGradientWarp::WarpingStrength(const Vector3& p, const Vector3& n) cons
 }
 
 /*!
-\brief
+\brief Evalutes the warped signed distance to the node.
+\param p point
 */
 double SDFGradientWarp::Signed(const Vector3& p) const
 {
@@ -190,7 +201,9 @@ double SDFGradientWarp::Signed(const Vector3& p) const
 
 
 /*!
-\brief
+\brief Constructor for a smooth block, from a set of (closed) planes and a smoothing radius.
+\param pl the planes
+\param sr smoothing radius
 */
 SDFBlock::SDFBlock(const std::vector<Plane>& pl, double sr) : SDFNode(Box(Plane::ConvexPoints(pl)).Extended(Vector3(0.01f)))
 {
