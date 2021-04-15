@@ -128,15 +128,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Code\Include\MC.h" />
+    <ClCompile Include="..\Code\Source\blocks-sdf.cpp" />
     <ClCompile Include="..\Code\Source\blocks.cpp" />
-    <ClCompile Include="..\Code\Source\heightfield.cpp" />
     <ClCompile Include="..\Code\Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Code\Include\basics.h" />
     <ClInclude Include="..\Code\Include\blocks.h" />
     <ClInclude Include="..\Code\Include\convhull_3d.h" />
-    <ClInclude Include="..\Code\Include\heightfield.h" />
     <ClInclude Include="..\Code\Include\noise.h" />
     <ClInclude Include="..\Code\Include\stb_image.h" />
     <ClInclude Include="..\Code\Include\vec.h" />

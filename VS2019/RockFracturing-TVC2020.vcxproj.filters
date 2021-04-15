@@ -14,14 +14,14 @@
     <ClCompile Include="..\Code\Source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Code\Source\heightfield.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Code\Source\blocks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Code\Include\MC.h">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Code\Source\blocks-sdf.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -32,9 +32,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Code\Include\noise.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Code\Include\heightfield.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Code\Include\blocks.h">
