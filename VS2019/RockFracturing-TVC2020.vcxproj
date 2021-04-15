@@ -128,7 +128,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Code\Include\MC.h" />
-    <ClCompile Include="..\Code\Source\blocks-sdf.cpp" />
     <ClCompile Include="..\Code\Source\blocks.cpp" />
     <ClCompile Include="..\Code\Source\main.cpp" />
   </ItemGroup>
