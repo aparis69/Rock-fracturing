@@ -23,13 +23,13 @@ In you can't compile or run the code, the resulting obj files are available in t
 You can use this code in any way you want, however please credit the original article:
 ```
 @article{Paris2020Blocks,
-  	author = {Paris, Axel and Peytavie, Adrien and Gu{\'e}rin, Eric and Dischler, J-M and Galin, Eric},
-  	title = {Modeling Rocky Scenery using Implicit Blocks},
-  	journal = {The Visual Computer},
-  	volume = {36},
-  	number = {10},
-  	year = {2020},
-  	pages = {1432--2315},
+  author = {Paris, Axel and Peytavie, Adrien and Gu{\'e}rin, Eric and Dischler, J-M and Galin, Eric},
+  title = {Modeling Rocky Scenery using Implicit Blocks},
+  journal = {The Visual Computer},
+  volume = {36},
+  number = {10},
+  year = {2020},
+  pages = {2251--2261},
 }
 ```	
 
