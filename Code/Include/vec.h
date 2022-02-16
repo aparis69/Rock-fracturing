@@ -4,7 +4,6 @@
 #include <iostream>
 
 /* Forward Declarations */
-struct Vector2i;
 struct Vector2;
 struct Vector3;
 struct Vector4;
@@ -65,85 +64,11 @@ namespace Math
 		return a < 0 ? -a : a;
 	}
 
-	inline double CubicSmoothCompact(double x, double r)
-	{
-		return (x > r) ? 0.0f : (1.0f - x / r) * (1.0f - x / r) * (1.0f - x / r);
-	}
-
-	inline double CubicSigmoid(double x, double r, double t)
-	{
-		if (x > 0.0f)
-		{
-			if (x < r)
-			{
-				return x * (1.0f + x * ((3.0f * t - 2.0f * r) / (r * r) + x * (r - 2.0f * t) / (r * r * r)));
-			}
-			else
-			{
-				return t;
-			}
-		}
-		else
-		{
-			if (x > -r)
-			{
-				// Use symmetric
-				double y = -x;
-				return  -(y * (1.0f + y * ((3.0f * t - 2.0f * r) / (r * r) + y * (r - 2.0f * t) / (r * r * r))));
-			}
-			else
-			{
-				return -t;
-			}
-		}
-	}
-
-	inline double CubicSmooth(double x)
-	{
-		return x * x * (3.0f - 2.0f * x);
-	}
-
-	inline double CubicSmooth(double x, double r)
-	{
-		return (1.0f - x / r) * (1.0f - x / r) * (1.0f - x / r);
-	}
-
-	inline double CubicSmoothStep(double x, double a, double b)
-	{
-		if (x < a)
-			return 0.0f;
-		else if (x > b)
-			return 1.0f;
-		else
-			return 1.0f - CubicSmooth((x - a) * (x - a), (b - a) * (b - a));
-	}
-
 	inline double QuinticSmooth(double t)
 	{
 		return pow(t, 3.0f) * (t * (t * 6.0f - 15.0f) + 10.0f);
 	}
 }
-
-
-/* Vector2i */
-struct Vector2i
-{
-public:
-	int x, y;
-
-	explicit Vector2i() : x(0), y(0) {}
-	explicit Vector2i(int n) : x(n), y(n) {}
-	explicit Vector2i(int x, int y) : x(x), y(y) {}
-
-	Vector2i operator-(const Vector2i& u) const
-	{
-		return Vector2i(x - u.x, y - u.y);
-	}
-	Vector2i operator+(const Vector2i& u) const
-	{
-		return Vector2i(x + u.x, y + u.y);
-	}
-};
 
 
 /* Vector3 */
@@ -325,7 +250,6 @@ public:
 	double x, y;
 
 	explicit Vector2() : x(0.0f), y(0.0f) { }
-	explicit Vector2(const Vector2i& v) : x(double(v.x)), y(double(v.y)) { }
 	explicit Vector2(double n) : x(n), y(n) { }
 	explicit Vector2(double x, double y) : x(x), y(y) { }
 	explicit Vector2(const Vector3& v) : x(v.x), y(v.z) { }

@@ -712,72 +712,6 @@ inline Vector2 Box2D::operator[](int i) const
 }
 
 
-// Circle2. A 2D Circle geometric element.
-class Circle2
-{
-protected:
-	Vector2 center;
-	double radius;
-
-public:
-	Circle2(const Vector2& c, double r);
-
-	Vector2 RandomOn() const;
-	Vector2 Center() const;
-	double Radius() const;
-	bool Contains(const Vector2& p) const;
-};
-
-/*!
-\brief Constructor
-\param c center
-\param r radius
-*/
-inline Circle2::Circle2(const Vector2& c, double r)
-{
-	center = c;
-	radius = r;
-}
-
-/*!
-\brief Compute a random point on the circle, uniformly.
-*/
-inline Vector2 Circle2::RandomOn() const
-{
-	double u = Random::Uniform(-radius, radius);
-	double v = Random::Uniform(-radius, radius);
-	double s = u * u + v * v;
-
-	double rx = (u * u - v * v) / s;
-	double ry = 2.0f * u * v / s;
-	return center + Vector2(rx, ry) * radius;
-}
-
-/*!
-\brief Returns the circle center.
-*/
-inline Vector2 Circle2::Center() const
-{
-	return center;
-}
-
-/*!
-\brief Returns the circle radius.
-*/
-inline double Circle2::Radius() const
-{
-	return radius;
-}
-
-/*!
-\brief Check if a given point lies inside the circle.
-*/
-inline bool Circle2::Contains(const Vector2& p) const
-{
-	return (Magnitude(p - center) < radius);
-}
-
-
 // Circle. A 3D Circle geometric element.
 class Circle
 {
@@ -860,8 +794,6 @@ public:
 	Sphere(const Vector3& c, double r);
 
 	double Distance(const Vector3& p) const;
-	bool Contains(const Vector3& p) const;
-	Vector3 RandomInside() const;
 	Vector3 RandomSurface() const;
 	Vector3 Center() const;
 	double Radius() const;
@@ -892,23 +824,6 @@ inline double Sphere::Distance(const Vector3& p) const
 	a = sqrt(a) - radius;
 	a *= a;
 	return a;
-}
-
-/*!
-\brief Returns true of the point lies inside the sphere (ie. Distance(p) == 0)
-\param p world point
-*/
-inline bool Sphere::Contains(const Vector3& p) const
-{
-	return Distance(p) == 0;
-}
-
-/*!
-\brief Compute a random point inside a sphere, uniformly.
-*/
-inline Vector3 Sphere::RandomInside() const
-{
-	return center + Vector3(Random::Uniform(-radius, radius), Random::Uniform(-radius, radius), Random::Uniform(-radius, radius));
 }
 
 /*!
@@ -1008,69 +923,6 @@ public:
 	}
 
 	/*
-	\brief Compute the gradient for the vertex (i, j)
-	*/
-	inline Vector2 Gradient(int i, int j) const
-	{
-		Vector2 ret;
-		double cellSizeX = (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
-		double cellSizeY = (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
-
-		// X Gradient
-		if (i == 0)
-			ret.x = (Get(i + 1, j) - Get(i, j)) / cellSizeX;
-		else if (i == ny - 1)
-			ret.x = (Get(i, j) - Get(i - 1, j)) / cellSizeX;
-		else
-			ret.x = (Get(i + 1, j) - Get(i - 1, j)) / (2.0f * cellSizeX);
-
-		// Y Gradient
-		if (j == 0)
-			ret.y = (Get(i, j + 1) - Get(i, j)) / cellSizeY;
-		else if (j == nx - 1)
-			ret.y = (Get(i, j) - Get(i, j - 1)) / cellSizeY;
-		else
-			ret.y = (Get(i, j + 1) - Get(i, j - 1)) / (2.0f * cellSizeY);
-
-		return ret;
-	}
-
-	/*
-	\brief Normalize this field
-	*/
-	inline void NormalizeField()
-	{
-		double min = Min();
-		double max = Max();
-		for (int i = 0; i < ny * nx; i++)
-			values[i] = (values[i] - min) / (max - min);
-	}
-
-	/*
-	\brief Return the normalized version of this field
-	*/
-	inline ScalarField2D Normalized() const
-	{
-		ScalarField2D ret(*this);
-		double min = Min();
-		double max = Max();
-		for (int i = 0; i < ny * nx; i++)
-			ret.values[i] = (ret.values[i] - min) / (max - min);
-		return ret;
-	}
-
-	/*!
-	\brief Computes and returns the square root of the ScalarField.
-	*/
-	inline ScalarField2D Sqrt() const
-	{
-		ScalarField2D ret(*this);
-		for (int i = 0; i < values.size(); i++)
-			ret.values[i] = sqrt(ret.values[i]);
-		return ret;
-	}
-
-	/*
 	\brief Compute a vertex world position including his height.
 	*/
 	inline Vector3 Vertex(int i, int j) const
@@ -1078,17 +930,6 @@ public:
 		double x = box.Vertex(0).x + i * (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
 		double y = Get(i, j);
 		double z = box.Vertex(0).y + j * (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
-		return Vector3(z, y, x);
-	}
-
-	/*
-	\brief Compute a vertex world position including his height.
-	*/
-	inline Vector3 Vertex(const Vector2i& v) const
-	{
-		double x = box.Vertex(0).x + v.x * (box.Vertex(1).x - box.Vertex(0).x) / (nx - 1);
-		double y = Get(v.x, v.y);
-		double z = box.Vertex(0).y + v.y * (box.Vertex(1).y - box.Vertex(0).y) / (ny - 1);
 		return Vector3(z, y, x);
 	}
 
@@ -1129,58 +970,6 @@ public:
 	}
 
 	/*!
-	\brief Check if a point lies inside the bounding box of the field.
-	*/
-	inline bool Inside(const Vector2i& v) const
-	{
-		if (v.x < 0 || v.x >= nx || v.y < 0 || v.y >= ny)
-			return false;
-		return true;
-	}
-
-	/*!
-	\brief Utility.
-	*/
-	inline Vector2i ToIndex2D(const Vector2& p) const
-	{
-		Vector2 q = p - box.Vertex(0);
-		Vector2 d = box.Vertex(1) - box.Vertex(0);
-
-		double u = q[0] / d[0];
-		double v = q[1] / d[1];
-
-		int j = int(u * (nx - 1));
-		int i = int(v * (ny - 1));
-
-		return Vector2i(i, j);
-	}
-
-	/*!
-	\brief Utility.
-	*/
-	inline void ToIndex2D(int index, int& i, int& j) const
-	{
-		i = index / nx;
-		j = index % nx;
-	}
-
-	/*!
-	\brief Utility.
-	*/
-	inline Vector2i ToIndex2D(int index) const
-	{
-		return Vector2i(index / nx, index % nx);
-	}
-
-	/*!
-	\brief Utility.
-	*/
-	inline int ToIndex1D(const Vector2i& v) const
-	{
-		return v.x * nx + v.y;
-	}
-
-	/*!
 	\brief Utility.
 	*/
 	inline int ToIndex1D(int i, int j) const
@@ -1195,57 +984,6 @@ public:
 	{
 		int index = ToIndex1D(row, column);
 		return values[index];
-	}
-
-	/*!
-	\brief Returns the value of the field at a given coordinate.
-	*/
-	inline double Get(int index) const
-	{
-		return values[index];
-	}
-
-	/*!
-	\brief Returns the value of the field at a given coordinate.
-	*/
-	inline double Get(const Vector2i& v) const
-	{
-		int index = ToIndex1D(v);
-		return values[index];
-	}
-
-	/*!
-	\brief Todo
-	*/
-	void Add(int i, int j, double v)
-	{
-		values[ToIndex1D(i, j)] += v;
-	}
-
-	/*!
-	\brief Todo
-	*/
-	void Remove(int i, int j, double v)
-	{
-		values[ToIndex1D(i, j)] -= v;
-	}
-
-	/*!
-	\brief Todo
-	*/
-	void Add(const ScalarField2D& field)
-	{
-		for (int i = 0; i < values.size(); i++)
-			values[i] += field.values[i];
-	}
-
-	/*!
-	\brief Todo
-	*/
-	void Remove(const ScalarField2D& field)
-	{
-		for (int i = 0; i < values.size(); i++)
-			values[i] -= field.values[i];
 	}
 
 	/*!
@@ -1303,34 +1041,6 @@ public:
 	}
 
 	/*!
-	\brief Set a given value at a given coordinate.
-	*/
-	inline void Set(const Vector2i& coord, double v)
-	{
-		values[ToIndex1D(coord)] = v;
-	}
-
-	/*!
-	\brief Set a given value at a given coordinate.
-	*/
-	inline void Set(int index, double v)
-	{
-		values[index] = v;
-	}
-
-	/*!
-	\brief Todo
-	*/
-	inline void ThresholdInferior(double t, double v)
-	{
-		for (int i = 0; i < values.size(); i++)
-		{
-			if (values[i] <= t)
-				values[i] = v;
-		}
-	}
-
-	/*!
 	\brief Compute the maximum of the field.
 	*/
 	inline double Max() const
@@ -1363,69 +1073,10 @@ public:
 	}
 
 	/*!
-	\brief Compute the average value of the scalarfield.
-	*/
-	inline double Average() const
-	{
-		double sum = 0.0f;
-		for (int i = 0; i < values.size(); i++)
-			sum += values[i];
-		return sum / values.size();
-	}
-
-	/*!
-	\brief Returns the size of the array.
-	*/
-	inline Vector2i Size() const
-	{
-		return Vector2i(nx, ny);
-	}
-
-	/*!
-	\brief Returns the size of x-axis of the array.
-	*/
-	inline int SizeX() const
-	{
-		return nx;
-	}
-
-	/*!
-	\brief Returns the size of y-axis of the array.
-	*/
-	inline int SizeY() const
-	{
-		return ny;
-	}
-
-	/*!
-	\brief Returns the bottom left corner of the bounding box.
-	*/
-	inline Vector2 BottomLeft() const
-	{
-		return box.Vertex(0);
-	}
-
-	/*!
-	\brief Returns the top right corner of the bounding box.
-	*/
-	inline Vector2 TopRight() const
-	{
-		return box.Vertex(1);
-	}
-
-	/*!
 	\brief Returns the bounding box of the field.
 	*/
 	inline Box2D GetBox() const
 	{
 		return box;
-	}
-
-	/*!
-	\brief Compute the memory used by the field.
-	*/
-	inline int Memory() const
-	{
-		return sizeof(ScalarField2D) + sizeof(double) * int(values.size());
 	}
 };

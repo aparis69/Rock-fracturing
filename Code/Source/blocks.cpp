@@ -136,7 +136,7 @@ SDFNode* SDFUnionSphereLOD::OptimizedBVHRecursive(std::vector<SDFNode*>& pts, in
 	auto pmid = std::partition(pts.begin() + begin, pts.begin() + end, BVHPartitionPredicate(stretchedAxis, axisMiddleCut));
 
 	// Ensure the partition is not degenerate : all primitives on the same side
-	unsigned int midIndex = std::distance(pts.begin(), pmid);
+	int midIndex = std::distance(pts.begin(), pmid);
 	if (midIndex == begin || midIndex == end)
 		midIndex = (begin + end) / 2;
 
@@ -193,7 +193,7 @@ double SDFGradientWarp::Signed(const Vector3& p) const
 {
 	// First compute gradient-based warping
 	Vector3 g = e->Gradient(p);
-	float s = 0.65 * WarpingStrength(p, -Normalize(g));
+	double s = 0.65 * WarpingStrength(p, -Normalize(g));
 
 	// Then compute contribution from the convex block
 	return e->Signed(p + g * s);
@@ -561,7 +561,7 @@ MC::mcMesh PolygonizeSDF(const Box& box, SDFNode* node)
 				for (int k = 0; k < n; k++)
 				{
 					Vector3 p = Vector3(box[0][0] + i * cellDiagonal[0], box[0][1] + j * cellDiagonal[1], box[0][2] + k * cellDiagonal[2]);
-					field[(k * n + j) * n + i] = node->Signed(p);
+					field[(k * n + j) * n + i] = (float)node->Signed(p);
 				}
 			}
 		}
