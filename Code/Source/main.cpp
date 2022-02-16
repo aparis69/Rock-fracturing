@@ -71,14 +71,14 @@ int main()
 	ComputeAndExportTile(FractureType::Equidimensional, "tile_equidimensional.obj");
 	std::cout << "Equidimensional tile done" << std::endl;
 
-	/*ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
+	ComputeAndExportTile(FractureType::Rhombohedral,	"tile_rhombohedral.obj");
 	std::cout << "Rhombohedral tile done" << std::endl;
 
 	ComputeAndExportTile(FractureType::Polyhedral,		"tile_polyhedral.obj");
 	std::cout << "Polyhedral tile done" << std::endl;
 
 	ComputeAndExportTile(FractureType::Tabular,			"tile_tabular.obj");
-	std::cout << "Tabular tile done" << std::endl;*/
+	std::cout << "Tabular tile done" << std::endl;
 
 	return 0;
 }
